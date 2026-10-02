@@ -171,12 +171,23 @@ main {
 .brand-title {
   font-family: 'Gloock', serif;
   font-weight: 500;
-  font-size: 80px;
-  line-height: 1.1;
+  font-size: 100px;
+  line-height: 1.05;
   letter-spacing: -0.02em;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.25rem;
   color: var(--text-color);
   user-select: none;
+}
+
+.brand-sub {
+  font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.72rem;
+  font-weight: 300;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  opacity: 0.75;
 }
 
 .tagline {
