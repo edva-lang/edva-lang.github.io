@@ -1,0 +1,132 @@
+# Edva Programming Language
+
+> Edva (`edva`) is a zero-keyword, expression-oriented systems programming language generating native machine code via LLVM 18. It combines high-level ergonomics (monadic ramifications, pattern matching, point-free pipelines) with bare-metal mechanical sympathy (zero RTTI, unboxed `{ i1, i64 }` unions, SIMD homogeneous records, in-place zero-copy builders).
+
+## Complete Consolidated Knowledge Base
+
+- [llms-full.txt](/llms-full.txt): Single-file Markdown compilation of the full reference manual, standard library, and grammar specification for direct ingestion by LLM agents.
+
+## Core Documentation & Guides
+
+- [Quickstart Guide](/edva/start/quickstart.html): Fast onboarding, declarations, signatures, and idioms.
+- [Language Tour](/edva/start/tour.html): High-level tour of zero-keyword control flow, ramifications, and builders.
+- [Operators Reference](/edva/reference/language/operators.html): Complete operator precedence tower and type semantics.
+- [Choices & Cycles](/edva/guide/choices-and-cycles.html): Pattern matching, multi-guard branches, and cycle-escape expressions.
+- [Ramifications](/edva/guide/ramifications.html): Binary algebraic outcomes, error handling, and monadic bind.
+- [Data & Memory](/edva/guide/data-and-memory.html): In-place Builders, immutable Strings, SIMD records, and mutability.
+- [FFI & Native Interop](/edva/guide/ffi-and-targets.html): POSIX syscalls, `#foreign` bindings, and zero-overhead C interop.
+- [Diagnostics & Errors](/edva/reference/diagnostics.html): Complete index of compiler diagnostics E2001–E5011.
+
+---
+
+## Unforgiving Hard Rules for Coding Agents & LLMs
+
+When generating or refactoring Edva code, you MUST follow these hard rules without exception:
+
+### 1. Zero Bare Keywords
+Traditional control keywords (`if`, `else`, `for`, `while`, `fn`, `return`, `break`, `continue`, `import`) DO NOT EXIST. Generating any of these causes compilation failure (`E2001` / `E2014`).
+- Conditional branching is expressed using choice expressions: `cond [guard] action | fallback`.
+- Iteration is expressed using cycle expressions: `Iterable @ item => body`.
+- Cycle break and continue are symbolic operators: `-->` (break) and `--^` (continue), with optional integer levels (`-->2`, `--^3`).
+
+### 2. Comparison Operators
+- The greater-than-or-equal comparison is `!<` ("not less than").
+- The less-than-or-equal comparison is `!>` ("not greater than").
+- There are NO `>=` or `<=` operators in Edva.
+- Comparison operators: `<`, `>`, `==`, `!=`, `!<`, `!>`.
+
+### 3. Choices & Pattern Matching
+- Choices evaluate a scrutinee against ordered branches: `x [guard] action | fallback`.
+- Value guard: `x [100] "perfect" [!< 90] "distinction" | "other"`.
+- Equality matching: `x [target]` is equivalent to `x == target`. Never write `[== target]`.
+- Statement choices do not require fallbacks: single-branch choices (`cond | action`) are standard statements (`.Unassignable` / `()`).
+- **Never insert dummy `| 0` fallbacks** in statement positions or side-effect functions.
+
+### 4. Ramifications & Binary Outcomes
+- Binary outcomes (presence/absence, success/failure) use four unboxed shapes:
+  - `<>`: bare Flag (`i1`).
+  - `<T|>`: positive payload `T`, negative unit absence.
+  - `<|E>`: positive unit success, negative payload `E`.
+  - `<T|E>`: unboxed register aggregate `{ i1 tag, i64 payload }`.
+- Constructors: `<+ value +>` (positive), `<- error ->` (negative), `<++>` / `<-->` (unit).
+- Positional matching: first branch is positive, second is negative (`res | ok => ... | err => ...`).
+- Monadic bind (`$>>`): chains fallible operations left-associatively (`query(id) $>> validate $>> (u => <+ u +>)`). Named functions receive the positive payload directly (`$>> validate`).
+- Postfix error propagation (`--!`): unwraps positive payload inline or early-returns negative branch (`cfg = parse(raw)--!`).
+
+### 5. Builders & Strings
+- Strings are immutable fat pointers `{ len, data }`. Member access (`.len`, `.data`) is illegal.
+  - Length is measured with unary prefix `?s`.
+  - String data address is accessed via unary `&s`.
+  - Raw/multiline strings use `(= ... =)` syntax: `body = (={"status": "ok"}=)`.
+- Builders are mutable in-place buffers:
+  - Allocation: `b = {32}` creates an arena Builder with capacity hint 32.
+  - Growing: use record notation `b = ("# Title\n", "item: ", name, "\n")` or `b = (13, 10)` to stream strings/bytes directly into the buffer without intermediate string concatenation allocations (`+`).
+  - Buffer address: `&b` yields the writable buffer pointer for FFI reads (`libc::read(fd, &b, 4096)`).
+  - Length setting: `?b = n` sets the visible length after an external read.
+  - Freeze: `+b` transfers ownership to an immutable String in-place with zero memory allocation.
+
+### 6. Variable Mutability & Primed Identifiers
+- Assignment and binding uniformly use `=`.
+- Ordinary bindings and function parameters are permanently immutable.
+- Rebindable variables declare and rebind with a trailing prime (`'`): `x' = 10; x' = x' + 1; x'' = 20`.
+- Interior mutations on composites (`pt.x = 10`, `arr += 100`, `b = ("a", "b")`) do not require primed bindings.
+
+### 7. SIMD & Homogeneous Records
+- Homogeneous records `(1, 2, 3, 4)` map directly to LLVM vector registers.
+- Support element-wise vector arithmetic: `v1 + v2`, `v * 2`, `v1 < v2`.
+- Postfix repetition splices flat records: `0 {8}` creates a record of 8 zeros.
+
+### 8. Intrinsics & Bitwise
+- Hardware intrinsics use `%` prefix: `%min`, `%max`, `%clamp`, `%abs`, `%dot`, `%sum`, `%shuffle`, `%usub_sat`.
+- Bit shifts: `.<.` (shift left) and `.>.` (shift right), masked to operand width - 1 to prevent LLVM undefined behavior.
+- Bitwise operators: `.&.` (AND), `.|.` (OR), `.!.` (unary NOT).
+
+### 9. Imports & Modules
+- Modules are imported with bare identifiers without quotes: `#use net`, `#use net/http`, `#use io`, `#use libc`.
+- `#foreign "c"` declares C ABI bindings with typed signatures.
+
+---
+
+## Canonical Idiomatic Examples
+
+### 1. HTTP Request Handler
+```dva
+#use net
+#use net/http
+
+handle_req: Int, String => Int
+handle_req = c_fd, r =>
+   path = http::path_of(r)
+   path ["/"]
+      http::respond(c_fd, 200, "text/plain", "Hello!")
+   ["/health"]
+      body = (={"status": "ok"}=)
+      http::respond(c_fd, 200, "application/json", body)
+   |
+      http::respond(c_fd, 404, "text/plain", "Not Found")
+```
+
+### 2. Zero-Copy File Reader
+```dva
+#use libc
+
+read_file: String => < String | >
+read_file = path =>
+   fd = libc::open(path, 0)
+   fd [< 0] <-->
+   |
+      b = {4096}
+      n = libc::read(fd, &b, 4096)
+      libc::close(fd)
+      n > 0 | (?b = n; <+ +b ->) | <-->
+```
+
+### 3. Pipeline & Cycle Escape
+```dva
+find_first_even: (Int[]) => < Int | >
+find_first_even = items =>
+   items @ x =>
+      x % 2 [0] -->
+   >--
+      x
+```

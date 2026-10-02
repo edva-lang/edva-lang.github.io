@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>edva — a zero-keyword, expression-oriented systems language</title>
+  
+  <!-- Google Fonts: Gloock & Roboto Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gloock&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+  <link rel="alternate" type="text/markdown" title="LLM Context (llms.txt)" href="/llms.txt">
+  <link rel="alternate" type="text/markdown" title="Complete LLM Reference (llms-full.txt)" href="/llms-full.txt">
+</head>
+<body>
+  <header>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">🌓</button>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1 class="brand-title">edva</h1>
+      <p class="tagline">A zero-keyword, expression-oriented systems language.</p>
+
+      <div class="nav-links">
+        <a href="/edva/" class="btn btn-primary">Read Documentation &rarr;</a>
+        <a href="https://github.com/edva-lang/edva" class="btn btn-outline" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/edva-lang/tree-sitter-edva" class="btn btn-outline" target="_blank" rel="noopener">Tree-sitter</a>
+      </div>
+    </section>
+
+    <!-- Code Showcase Section -->
+    <section class="showcase">
+      <div class="showcase-header">
+        <h2 class="showcase-title">Language by Example</h2>
+        <p class="showcase-desc">Explore syntax, symbolic control flow, algebraic types, and performance.</p>
+      </div>
+
+      <div class="showcase-box">
+        <nav class="tabs-bar" role="tablist">
+          <button class="tab-btn active" data-tab="tab-choices">Choices & Flow</button>
+          <button class="tab-btn" data-tab="tab-rams">Ramifications & Errors</button>
+          <button class="tab-btn" data-tab="tab-builder">Builders & Memory</button>
+          <button class="tab-btn" data-tab="tab-server">HTTP Server</button>
+        </nav>
+
+        <!-- Tab 1: Choices & Symbolic Flow -->
+        <div class="tab-content active" id="tab-choices">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>Symbolic Control Flow</h3>
+              <p>Edva has <strong>zero keywords</strong>. Conditional branches, pattern matching, and cycles are unified into expressions.</p>
+              <ul>
+                <li><code>|</code> introduces choices and fallback branches</li>
+                <li><code>[guard]</code> supports value, predicate (e.g. <code>[!&lt; 90]</code>), or variant guards</li>
+                <li><code>@</code> iterates over ranges, arrays, or streams</li>
+                <li><code>--&gt;</code> and <code>--^</code> provide symbolic break and continue</li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-com">// Conditionals & multi-guard pattern matching</span>
+<span class="tok-fn">classify</span> <span class="tok-op">=</span> <span class="tok-fn">score</span> <span class="tok-op">=&gt;</span>
+   score <span class="tok-op">[</span><span class="tok-num">100</span><span class="tok-op">]</span>       <span class="tok-str">"perfect"</span>
+         <span class="tok-op">[</span><span class="tok-op">!&lt;</span> <span class="tok-num">90</span><span class="tok-op">]</span>     <span class="tok-str">"distinction"</span>
+         <span class="tok-op">[</span><span class="tok-op">!&lt;</span> <span class="tok-num">50</span><span class="tok-op">]</span>     <span class="tok-str">"pass"</span>
+         <span class="tok-op">|</span>           <span class="tok-str">"fail"</span>
+
+<span class="tok-com">// Iteration with @ and symbolic cycle control</span>
+count <span class="tok-op">=</span> <span class="tok-num">10</span>
+<span class="tok-num">0</span><span class="tok-op">..</span>count <span class="tok-op">@</span> <span class="tok-fn">i</span> <span class="tok-op">=&gt;</span>
+   i <span class="tok-op">[</span><span class="tok-num">7</span><span class="tok-op">]</span> <span class="tok-op">--&gt;</span>          <span class="tok-com">// --&gt; breaks the cycle</span>
+   <span class="tok-fn">print</span> <span class="tok-op">$</span> <span class="tok-fn">classify</span>(i <span class="tok-op">*</span> <span class="tok-num">10</span>)</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Ramifications & Errors -->
+        <div class="tab-content" id="tab-rams">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>Algebraic Ramifications</h3>
+              <p>Rams represent binary outcomes (presence/absence, success/failure) with unboxed <code>{ i1, i64 }</code> storage.</p>
+              <ul>
+                <li>Four shapes: <code>&lt;&gt;</code>, <code>&lt;T|&gt;</code>, <code>&lt;|E&gt;</code>, <code>&lt;T|E&gt;</code></li>
+                <li>Positional matching: first branch is positive, second negative</li>
+                <li>Monadic propagation via <code>$&gt;&gt;</code></li>
+                <li>Inline unwrap and error bubbling via <code>--!</code></li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-com">// Monadic bind ($>>) chains fallible operations</span>
+<span class="tok-fn">find_user</span>: <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;</span> <span class="tok-typ">User</span> <span class="tok-op">|</span> <span class="tok-typ">Error</span> <span class="tok-op">&gt;</span>
+<span class="tok-fn">find_user</span> <span class="tok-op">=</span> <span class="tok-fn">id</span> <span class="tok-op">=&gt;</span>
+   <span class="tok-fn">query_db</span>(id) <span class="tok-op">$>></span> <span class="tok-fn">validate</span> <span class="tok-op">$>></span> (<span class="tok-fn">u</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;+</span> u <span class="tok-op">+&gt;</span>)
+
+<span class="tok-com">// Postfix error propagation (--!) unwraps or early-returns</span>
+<span class="tok-fn">load_config</span>: <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;</span> <span class="tok-typ">Config</span> <span class="tok-op">|</span> <span class="tok-typ">Error</span> <span class="tok-op">&gt;</span>
+<span class="tok-fn">load_config</span> <span class="tok-op">=</span> <span class="tok-fn">path</span> <span class="tok-op">=&gt;</span>
+   raw <span class="tok-op">=</span> <span class="tok-fn">io::read_file</span>(path)<span class="tok-op">--!</span>
+   cfg <span class="tok-op">=</span> <span class="tok-fn">json::parse</span>(raw)<span class="tok-op">--!</span>
+   <span class="tok-op">&lt;+</span> cfg <span class="tok-op">+&gt;</span></code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Builders & Memory -->
+        <div class="tab-content" id="tab-builder">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>In-Place Builders & Strings</h3>
+              <p>Strings are immutable fat pointers. Builders provide high-throughput in-place buffering with zero-copy freeze.</p>
+              <ul>
+                <li><code>b = {N}</code> allocates an initial buffer with capacity <code>N</code></li>
+                <li><code>b = (s1, s2, ...)</code> streams elements via record notation without string concat</li>
+                <li><code>b = (13, 10)</code> appends raw CRLF byte records directly</li>
+                <li><code>+b</code> freezes the buffer into an immutable String with <strong>zero allocation</strong></li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-com">// Pure strings & in-place builders</span>
+<span class="tok-fn">build_report</span>: (<span class="tok-typ">String</span>[]) <span class="tok-op">=&gt;</span> <span class="tok-typ">String</span>
+<span class="tok-fn">build_report</span> <span class="tok-op">=</span> <span class="tok-fn">items</span> <span class="tok-op">=&gt;</span>
+   b <span class="tok-op">=</span> {<span class="tok-num">128</span>}                         <span class="tok-com">// initial capacity hint</span>
+   b <span class="tok-op">=</span> (<span class="tok-str">"# Report Summary"</span>, <span class="tok-str">"\n\n"</span>)  <span class="tok-com">// record streaming</span>
+
+   items <span class="tok-op">@</span> <span class="tok-fn">item</span> <span class="tok-op">=&gt;</span>
+      b <span class="tok-op">=</span> (<span class="tok-str">" - "</span>, item, <span class="tok-str">"\n"</span>)        <span class="tok-com">// zero-alloc append</span>
+
+   b <span class="tok-op">=</span> (<span class="tok-num">13</span>, <span class="tok-num">10</span>)                      <span class="tok-com">// CRLF byte record</span>
+   <span class="tok-op">+</span>b                                <span class="tok-com">// freeze to String</span></code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: HTTP Server -->
+        <div class="tab-content" id="tab-server">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>Native Networking</h3>
+              <p>A production-ready micro HTTP service built purely on Edva's standard library with zero runtime overhead.</p>
+              <ul>
+                <li>Native non-blocking sockets and poll integration</li>
+                <li>Raw string literals <code>(= ... =)</code> for inline JSON/templates</li>
+                <li>No tracing garbage collector or thread runtime</li>
+                <li>Direct LLVM compilation and native link</li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">net</span>
+<span class="tok-dir">#use</span> <span class="tok-typ">net/http</span>
+
+<span class="tok-fn">handle_req</span>: <span class="tok-typ">Int</span>, <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> <span class="tok-typ">Int</span>
+<span class="tok-fn">handle_req</span> <span class="tok-op">=</span> <span class="tok-fn">c_fd</span>, <span class="tok-fn">r</span> <span class="tok-op">=&gt;</span>
+   path <span class="tok-op">=</span> <span class="tok-fn">http::path_of</span>(r)
+   path <span class="tok-op">[</span><span class="tok-str">"/"</span><span class="tok-op">]</span>
+      <span class="tok-fn">http::respond</span>(c_fd, <span class="tok-num">200</span>, <span class="tok-str">"text/plain"</span>, <span class="tok-str">"Hello!"</span>)
+   <span class="tok-op">[</span><span class="tok-str">"/health"</span><span class="tok-op">]</span>
+      body <span class="tok-op">=</span> <span class="tok-str">(={"status": "ok"}=)</span>
+      <span class="tok-fn">http::respond</span>(c_fd, <span class="tok-num">200</span>, <span class="tok-str">"application/json"</span>, body)
+   <span class="tok-op">|</span>
+      <span class="tok-fn">http::respond</span>(c_fd, <span class="tok-num">404</span>, <span class="tok-str">"text/plain"</span>, <span class="tok-str">"Not Found"</span>)</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Showcase Block 2: Additional Language Features -->
+    <section class="showcase">
+      <div class="showcase-header">
+        <h2 class="showcase-title">Expressive Power &amp; Low-Level Precision</h2>
+        <p class="showcase-desc">Modern ergonomics paired with mechanical sympathy</p>
+      </div>
+
+      <div class="showcase-box">
+        <!-- Tab Bar -->
+        <div class="tabs-bar">
+          <button class="tab-btn active" data-tab="tab-pipeline">Pipelines</button>
+          <button class="tab-btn" data-tab="tab-cycle-escape">Cycle Escape</button>
+          <button class="tab-btn" data-tab="tab-simd">SIMD Vectors</button>
+          <button class="tab-btn" data-tab="tab-mutability">Mutability</button>
+        </div>
+
+        <!-- Tab 5: Pipelines & Sections -->
+        <div class="tab-content active" id="tab-pipeline">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>Pipelines &amp; Sections</h3>
+              <p>Chain functions with multi-argument feed and point-free operator sections.</p>
+              <ul>
+                <li><code>$&gt;</code> feeds the LHS as the first argument to RHS</li>
+                <li><code>$</code> applies multi-argument functions with infix precedence</li>
+                <li><code>(2 * _)</code> desugars to a clean inline lambda</li>
+                <li>Zero wrapper closures generated at runtime</li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-com">// Multi-argument feed ($>) and sections</span>
+<span class="tok-fn">clamp</span>: <span class="tok-typ">Int</span>, <span class="tok-typ">Int</span>, <span class="tok-typ">Int</span> <span class="tok-op">=&gt;</span> <span class="tok-typ">Int</span>
+<span class="tok-fn">clamp</span> <span class="tok-op">=</span> <span class="tok-fn">val</span>, <span class="tok-fn">lo</span>, <span class="tok-fn">hi</span> <span class="tok-op">=&gt;</span>
+   val <span class="tok-op">[</span><span class="tok-op">&lt;</span> lo<span class="tok-op">]</span> lo <span class="tok-op">[</span><span class="tok-op">&gt;</span> hi<span class="tok-op">]</span> hi <span class="tok-op">|</span> val
+
+raw <span class="tok-op">=</span> <span class="tok-num">150</span>
+<span class="tok-com">// Feeds raw into clamp, then applies section</span>
+result <span class="tok-op">=</span> raw <span class="tok-op">$></span> <span class="tok-fn">clamp</span>(<span class="tok-num">0</span>, <span class="tok-num">100</span>) <span class="tok-op">$></span> (<span class="tok-num">2</span> <span class="tok-op">*</span> <span class="tok-op">_</span>)
+<span class="tok-fn">print_int</span> <span class="tok-op">$</span> result</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 6: Cycle Escapes -->
+        <div class="tab-content" id="tab-cycle-escape">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>Cycle Escapes &amp; Jumps</h3>
+              <p>Cycles evaluate as expressions returning binary ramifications.</p>
+              <ul>
+                <li><code>i [target]</code> value guard checks equality (equivalent to <code>i == target</code>)</li>
+                <li><code>--&gt;</code> breaks innermost cycle; <code>--&gt;N</code> jumps N outer levels</li>
+                <li><code>--^</code> continues innermost iteration</li>
+                <li><code>&gt;--</code> turns cycles into expressions yielding <code>&lt; T | &gt;</code></li>
+                <li>Produces <code>&lt;+ val +&gt;</code> on break, <code>&lt;--&gt;</code> on completion</li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-com">// Cycle-escape (>--) returns &lt; T | &gt;</span>
+<span class="tok-fn">find_target</span>: <span class="tok-typ">Int</span>, <span class="tok-typ">Int</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;</span> <span class="tok-typ">Int</span> <span class="tok-op">|</span> <span class="tok-op">&gt;</span>
+<span class="tok-fn">find_target</span> <span class="tok-op">=</span> <span class="tok-fn">count</span>, <span class="tok-fn">target</span> <span class="tok-op">=&gt;</span>
+   <span class="tok-num">0</span><span class="tok-op">..</span>count <span class="tok-op">@</span> <span class="tok-fn">i</span> <span class="tok-op">=&gt;</span>
+      i <span class="tok-op">[</span>target<span class="tok-op">]</span> <span class="tok-op">--&gt;</span>         <span class="tok-com">// matches i == target; breaks</span>
+   <span class="tok-op">&gt;--</span>
+      target
+
+res <span class="tok-op">=</span> <span class="tok-fn">find_target</span>(<span class="tok-num">10</span>, <span class="tok-num">7</span>)
+res <span class="tok-op">|</span> <span class="tok-fn">print_int</span>(<span class="tok-op">_</span>) <span class="tok-op">|</span> <span class="tok-fn">print</span> <span class="tok-op">$</span> <span class="tok-str">"Not found"</span></code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 7: SIMD & Vector Records -->
+        <div class="tab-content" id="tab-simd">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>SIMD &amp; Vector Math</h3>
+              <p>Hardware-accelerated element-wise operations with zero glue code.</p>
+              <ul>
+                <li>Homogeneous records map directly to LLVM vector registers</li>
+                <li>Element-wise arithmetic: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code></li>
+                <li>Scalar broadcasting across vector operands</li>
+                <li><code>0 {N}</code> postfix repetition creates flat records</li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-com">// LLVM SIMD operations on homogeneous records</span>
+pos <span class="tok-op">=</span> (<span class="tok-num">10</span>, <span class="tok-num">20</span>, <span class="tok-num">30</span>, <span class="tok-num">40</span>)
+vel <span class="tok-op">=</span> (<span class="tok-num">1</span>, <span class="tok-num">2</span>, <span class="tok-num">3</span>, <span class="tok-num">4</span>)
+
+<span class="tok-com">// Element-wise addition and scalar broadcast multiply</span>
+next_pos <span class="tok-op">=</span> pos <span class="tok-op">+</span> vel <span class="tok-op">*</span> <span class="tok-num">2</span>
+
+<span class="tok-fn">print_int</span> <span class="tok-op">$</span> next_pos(<span class="tok-num">0</span>)    <span class="tok-com">// 12</span>
+<span class="tok-fn">print_int</span> <span class="tok-op">$</span> next_pos(<span class="tok-num">3</span>)    <span class="tok-com">// 48</span></code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 8: Mutability & Prime Identifiers -->
+        <div class="tab-content" id="tab-mutability">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>Explicit Mutability</h3>
+              <p>Deterministic immutability by default, with clear visual mutation boundaries.</p>
+              <ul>
+                <li>Bindings are immutable by default; <code>=</code> is used uniformly</li>
+                <li>Rebindable variables require trailing primes: <code>x'</code>, <code>x''</code></li>
+                <li>Function parameters are permanently immutable</li>
+                <li>Interior record mutations (<code>pt.x = ...</code>) require no primes</li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-dir">#type</span> <span class="tok-typ">Point</span> (x: <span class="tok-typ">Int</span>, y: <span class="tok-typ">Int</span>)
+
+<span class="tok-com">// Unprimed bindings allow interior field mutation</span>
+pt <span class="tok-op">=</span> <span class="tok-typ">Point</span>(<span class="tok-num">10</span>, <span class="tok-num">20</span>)
+pt.x <span class="tok-op">=</span> <span class="tok-num">42</span>
+
+<span class="tok-com">// Rebindable local variables declare with a prime (')</span>
+total<span class="tok-op">'</span> <span class="tok-op">=</span> <span class="tok-num">0</span>
+<span class="tok-num">0</span><span class="tok-op">..</span><span class="tok-num">5</span> <span class="tok-op">@</span> <span class="tok-fn">i</span> <span class="tok-op">=&gt;</span>
+   total<span class="tok-op">'</span> <span class="tok-op">=</span> total<span class="tok-op">'</span> <span class="tok-op">+</span> i
+
+<span class="tok-fn">print_int</span> <span class="tok-op">$</span> total<span class="tok-op">'</span> <span class="tok-op">+</span> pt.x   <span class="tok-com">// 52</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Showcase Block 3: Low-Level Primitives & Intrinsics -->
+    <section class="showcase">
+      <div class="showcase-header">
+        <h2 class="showcase-title">Systems Programming &amp; Direct Hardware Access</h2>
+        <p class="showcase-desc">Zero-cost abstractions with bare-metal control</p>
+      </div>
+
+      <div class="showcase-box">
+        <!-- Tab Bar -->
+        <div class="tabs-bar">
+          <button class="tab-btn active" data-tab="tab-file-io">File I/O</button>
+          <button class="tab-btn" data-tab="tab-intrinsics">LLVM Intrinsics</button>
+          <button class="tab-btn" data-tab="tab-enums">Tagged Enums</button>
+          <button class="tab-btn" data-tab="tab-bitwise">Bitwise Ops</button>
+        </div>
+
+        <!-- Tab 9: File I/O & Memory -->
+        <div class="tab-content active" id="tab-file-io">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>File I/O &amp; Memory</h3>
+              <p>Direct POSIX file descriptor handling with zero-copy buffer transfers.</p>
+              <ul>
+                <li><code>libc::open</code> opens native POSIX file descriptors</li>
+                <li><code>b = {4096}</code> allocates an in-place Builder buffer</li>
+                <li><code>&amp;b</code> passes the writable buffer pointer directly</li>
+                <li><code>?b = n</code> updates length; <code>+b</code> freezes without copying</li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">libc</span>
+
+<span class="tok-com">// Zero-copy file read using Builder buffer</span>
+<span class="tok-fn">read_file</span>: <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;</span> <span class="tok-typ">String</span> <span class="tok-op">|</span> <span class="tok-op">&gt;</span>
+<span class="tok-fn">read_file</span> <span class="tok-op">=</span> <span class="tok-fn">path</span> <span class="tok-op">=&gt;</span>
+   fd <span class="tok-op">=</span> <span class="tok-fn">libc::open</span>(path, <span class="tok-num">0</span>)
+   fd <span class="tok-op">[</span><span class="tok-op">&lt;</span> <span class="tok-num">0</span><span class="tok-op">]</span> <span class="tok-op">&lt;--&gt;</span>
+   <span class="tok-op">|</span>
+      b <span class="tok-op">=</span> {<span class="tok-num">4096</span>}
+      n <span class="tok-op">=</span> <span class="tok-fn">libc::read</span>(fd, <span class="tok-op">&amp;</span>b, <span class="tok-num">4096</span>)
+      <span class="tok-fn">libc::close</span>(fd)
+      n <span class="tok-op">&gt;</span> <span class="tok-num">0</span> <span class="tok-op">|</span> (<span class="tok-op">?</span>b <span class="tok-op">=</span> n; <span class="tok-op">&lt;+</span> <span class="tok-op">+</span>b <span class="tok-op">+&gt;</span>) <span class="tok-op">|</span> <span class="tok-op">&lt;--&gt;</span></code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 10: LLVM Intrinsics -->
+        <div class="tab-content" id="tab-intrinsics">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>LLVM Intrinsics</h3>
+              <p>Compiler-level intrinsics lowered directly to target processor instructions.</p>
+              <ul>
+                <li><code>%</code>-prefixed intrinsics lower to LLVM IR without calls</li>
+                <li><code>%dot</code> and <code>%sum</code> for hardware SIMD reductions</li>
+                <li><code>%clamp</code> and <code>%usub_sat</code> for saturating math</li>
+                <li>Zero runtime overhead or library dependency</li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-com">// Hardware-accelerated LLVM intrinsics</span>
+a <span class="tok-op">=</span> (<span class="tok-num">1</span>, <span class="tok-num">2</span>, <span class="tok-num">3</span>)
+b <span class="tok-op">=</span> (<span class="tok-num">4</span>, <span class="tok-num">5</span>, <span class="tok-num">6</span>)
+
+<span class="tok-com">// Vector reductions &amp; dot products</span>
+dot_prod <span class="tok-op">=</span> <span class="tok-fn">%dot</span>(a, b)       <span class="tok-com">// llvm.fmuladd / SIMD</span>
+total    <span class="tok-op">=</span> <span class="tok-fn">%sum</span>(a)          <span class="tok-com">// llvm.vector.reduce.add</span>
+
+<span class="tok-com">// Bounding &amp; saturating arithmetic</span>
+clamped  <span class="tok-op">=</span> <span class="tok-fn">%clamp</span>(<span class="tok-num">120</span>, <span class="tok-num">0</span>, <span class="tok-num">100</span>)  <span class="tok-com">// 100</span>
+sat_sub  <span class="tok-op">=</span> <span class="tok-fn">%usub_sat</span>(<span class="tok-num">5</span>, <span class="tok-num">10</span>)     <span class="tok-com">// 0 (unsigned sat)</span></code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 11: Tagged Enums -->
+        <div class="tab-content" id="tab-enums">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>Tagged Enums</h3>
+              <p>Type-safe algebraic data types with compact unboxed payloads.</p>
+              <ul>
+                <li><code>#type Name &lt;Variants&gt;</code> defines closed algebraic types</li>
+                <li>Variant guards <code>[Tag(payload)]</code> bind fields directly</li>
+                <li>Deep structural equality with <code>==</code> compares tag and payload</li>
+                <li>Unboxed register storage for single-scalar variants</li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-dir">#type</span> <span class="tok-typ">Shape</span> <span class="tok-op">&lt;</span> <span class="tok-typ">Circle</span>(<span class="tok-typ">Float</span>), <span class="tok-typ">Rect</span>((<span class="tok-typ">Float</span>, <span class="tok-typ">Float</span>)) <span class="tok-op">&gt;</span>
+
+<span class="tok-com">// Variant pattern matching binds payloads directly</span>
+<span class="tok-fn">area</span>: <span class="tok-typ">Shape</span> <span class="tok-op">=&gt;</span> <span class="tok-typ">Float</span>
+<span class="tok-fn">area</span> <span class="tok-op">=</span> <span class="tok-fn">s</span> <span class="tok-op">=&gt;</span>
+   s <span class="tok-op">[</span><span class="tok-typ">Circle</span>(r)<span class="tok-op">]</span> <span class="tok-num">3.14</span> <span class="tok-op">*</span> r <span class="tok-op">*</span> r
+     <span class="tok-op">[</span><span class="tok-typ">Rect</span>(dim)<span class="tok-op">]</span> dim(<span class="tok-num">0</span>) <span class="tok-op">*</span> dim(<span class="tok-num">1</span>)
+
+c <span class="tok-op">=</span> <span class="tok-typ">Shape</span>(<span class="tok-typ">Circle</span>, <span class="tok-num">10.0</span>)
+<span class="tok-fn">print_float</span> <span class="tok-op">$</span> <span class="tok-fn">area</span>(c)       <span class="tok-com">// 314.0</span></code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 12: Bitwise Operators -->
+        <div class="tab-content" id="tab-bitwise">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>Bitwise Operators</h3>
+              <p>Predictable low-level binary manipulation with UB-safe bit shifts.</p>
+              <ul>
+                <li><code>.&lt;.</code> and <code>.&gt;.</code> zero-fill shifts masked to operand width</li>
+                <li><code>.&amp;.</code> bitwise AND and <code>.|.</code> bitwise OR</li>
+                <li><code>.!.</code> unary bitwise negation (integers and runes only)</li>
+                <li>Explicit type suffixes: <code>0xFFu8</code>, <code>0b1010u16</code>, <code>1i64</code></li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-com">// Bitwise operators &amp; UB-safe bit shifts</span>
+mask<span class="tok-op">'</span> <span class="tok-op">=</span> <span class="tok-num">0x01</span> <span class="tok-op">.|.</span> <span class="tok-num">0x04</span>       <span class="tok-com">// bitwise OR: 5</span>
+
+<span class="tok-com">// Test bitmask flags</span>
+has_flag <span class="tok-op">=</span> mask<span class="tok-op">'</span> <span class="tok-op">.&amp;.</span> <span class="tok-num">0x04</span> <span class="tok-op">!=</span> <span class="tok-num">0</span>
+
+<span class="tok-com">// Logical shift left with masked operand width</span>
+offset <span class="tok-op">=</span> <span class="tok-num">1</span> <span class="tok-op">.&lt;.</span> <span class="tok-num">8</span>            <span class="tok-com">// 256</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="nav-links bottom-nav">
+      <a href="/edva/" class="btn btn-primary">Read Documentation &rarr;</a>
+      <a href="https://github.com/edva-lang/edva" class="btn btn-outline" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/edva-lang/tree-sitter-edva" class="btn btn-outline" target="_blank" rel="noopener">Tree-sitter</a>
+    </div>
+
+    <footer>
+      <p>&copy; 2026 edva-lang. Licensed under BSD-2-Clause. &bull; <a href="/llms.txt">llms.txt</a> &bull; <a href="/llms-full.txt">llms-full.txt</a></p>
+    </footer>
+  </main>
+
+  <script>
+    // Dark/Light Theme Switcher
+    const toggle = document.getElementById('themeToggle');
+    const getPreferredTheme = () => {
+      const stored = localStorage.getItem('theme');
+      if (stored) return stored;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+
+    const setTheme = (theme) => {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      toggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+    };
+
+    let currentTheme = getPreferredTheme();
+    setTheme(currentTheme);
+
+    toggle.addEventListener('click', () => {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      setTheme(currentTheme);
+    });
+
+    // Tab Switching (scoped to each showcase box)
+    document.querySelectorAll('.showcase-box').forEach(box => {
+      const buttons = box.querySelectorAll('.tab-btn');
+      const contents = box.querySelectorAll('.tab-content');
+
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          buttons.forEach(b => b.classList.remove('active'));
+          contents.forEach(c => c.classList.remove('active'));
+
+          btn.classList.add('active');
+          const target = btn.getAttribute('data-tab');
+          const targetEl = box.querySelector('#' + target);
+          if (targetEl) targetEl.classList.add('active');
+        });
+      });
+    });
+
+    // Copy to Clipboard
+    function copySnippet(button) {
+      const pre = button.nextElementSibling;
+      const code = pre.innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const originalText = button.textContent;
+        button.textContent = 'Copied!';
+        setTimeout(() => {
+          button.textContent = originalText;
+        }, 1800);
+      });
+    }
+  </script>
+</body>
+</html>
