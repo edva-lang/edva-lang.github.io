@@ -59,7 +59,7 @@ The operator precedence hierarchy is organized into binding tiers (from loosest 
 | 3 | Pipe Infix Apply | `$` | Right | Infix multi-argument application `f(a) $ b` == `f(a, b)` |
 | 4 | Pipe Feed & Bind | `$>`, `$>>` | Left | Feed `x $> f(a)` == `f(x, a)`; Monadic bind `x $>> f` |
 | 5 | Choice & Branches | `[guard]`, `|`, `!|` | Left | Pattern match branches and fallbacks |
-| 6 | Logical Short-circuit | `\|\|`, `&&` | Left | Short-circuit boolean/ram evaluation |
+| 6 | Logical Short-circuit | `||`, `&&` | Left | Short-circuit boolean/ram evaluation |
 | 7 | Bitwise Logic | `.|.`, `.&.` | Left | Bitwise OR and AND |
 | 8 | Comparisons | `==`, `!=`, `<`, `>`, `!<`, `!>` | None | Value, structural equality, and ordering |
 | 9 | Bit Shifts | `.<.`, `.>.` | Left | Zero-fill logical left/right shifts |
