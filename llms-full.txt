@@ -246,3 +246,4 @@ read_file = path =>
 - `E3128`: Parameter types cannot be determined for function used as a value without declared signature.
 - `E3130`–`E3132`: Field initialization tracking errors (access of uninitialized composite field).
 - `E5001`–`E5011`: Driver, linker, and target compilation errors.
+- `E5030`–`E5038`: Package system diagnostics (missing/stale import map, unknown package alias, internal module imports, direct dependency violations, cross-package cycles).
