@@ -101,7 +101,7 @@ Iteration is performed using `@`:
 0..count @ i =>
    i [2] --^         // --^ skips this iteration (continue)
    i [8] -->         // --> terminates the loop (break)
-   print_int $ i
+   io::out(i)
 ```
 
 Multi-level jumps support integer suffixes: `-->2` breaks out of two enclosing loops.
