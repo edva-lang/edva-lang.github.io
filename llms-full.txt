@@ -13,21 +13,27 @@
   - Greater-than-or-equal is written as `!<` ("not less than").
   - Less-than-or-equal is written as `!>` ("not greater than").
   - `>=` and `<=` do NOT exist in the language.
-- **Binding Mutability**: Edva uses `=` uniformly for bindings and reassignments. Bindings are immutable by default. Rebindable local variables use trailing prime (`'`) identifiers (`x' = 1; x' = x' + 1`). Parameters are strictly immutable. Interior mutations (`pt.x = 1`, `b = ("a", "b")`, `arr += 1`) do not require primed bindings.
+- **Binding Mutability**: Edva uses `=` uniformly for bindings and reassignments. Bindings are immutable by default. Rebindable local variables use trailing prime (`'`) identifiers (`x' = 1; x' = x' + 1`). Parameters are strictly immutable. Interior mutations (`pt.x = 1`, `b += ("a", "b")`, `arr += 1`) do not require primed bindings.
 - **Clean Choices**: A single-branch choice `cond | action` evaluates as a statement. Never supply dummy `| 0` fallbacks in statement positions.
-- **Unquoted Imports**: Module imports use bare identifiers: `#use net`, `#use net/http`, `#use io`, `#use libc`.
+- **Code Terseness & No Parens**: Expressions after `=`, `:=`, or in choice conditions must NEVER be parenthesized. Write `x = a + b`, not `x = (a + b)`. Write `cond | action`, not `(cond) | action`.
+- **Favor Point-Free Style**: Prefer point-free choice pipelines and function passing where applicable (e.g. `get_string(root, path) | parse_int` instead of `| s => parse_int(s)`).
+- **Direct Anonymous Array Types**: Use unparenthesized array types directly (`Node{}`, `Entry{}`, `Int{}`). Avoid plural type aliases (`NodeList`).
 - **Indentation & Line Length**: Code uses consistent space-only indentation. Line lengths should not exceed 100 characters.
 
 ---
 
 # 2. Lexical Structure
 
-## 2.1 Identifiers & Keywords
+## 2.1 Identifiers & Directives
 Identifiers conform to UAX31. Dva has zero bare keywords. Directives start with `#`:
-- `#use`: imports a module (`#use net`, `#use str`).
+- `#use`: imports a module:
+  - Local / stdlib: `#use net`, `#use str`, `#use net/http`.
+  - Package dependencies: `#use @alias` (imports root module `src/<pkg>.dva` as `alias::*`), `#use @alias/submod` (imports `src/submod.dva` as `submod::*`).
+  - Unqualified import: `#use(import) str` brings symbols into current scope without `str::` prefix.
+  - Dynamic hot-reload: `#use(dynamic) views`.
 - `#type`: declares a nominal record, ram, or enum type (`#type Point (x: Int, y: Int)`).
 - `#foreign`: declares foreign C ABI functions (`#foreign "c"`).
-- `#public` / `#private`: access visibility directives.
+- `#public` / `#private`: access visibility directives. Declarations outside `#public` are private to the module. Modules under `src/internal/` are package-private.
 - `#!`: compile-time evaluation.
 
 ## 2.2 Literals
@@ -85,6 +91,8 @@ classify = score =>
   ```dva
   has_error | log("Error detected")
   ```
+- **Implicit Absence Fallback**: In expression choices returning an optional/ramification, a trailing `| <-->` is implicit if not provided.
+- **Point-Free Handlers**: Unpack ramifications directly by passing handler functions: `get_val() | parse_int`.
 
 ## 4.2 Cycles & Control
 Iteration is performed using `@`:
@@ -125,7 +133,23 @@ find_target = count, target =>
 - `Flag`: Bare boolean (`i1`), constructed with `<+>` (true) or `<->` (false).
 - `Error`: Standard error record `(code: Int, msg: String, file: String, line: Int, col: Int, context: (Int, Int))`.
 
-## 5.2 The Four Ramification Shapes
+## 5.2 Growable Arrays (`T{}` or `(T){}`)
+Growable arrays are dynamically-sized collections:
+```dva
+// Variable initialization
+arr: Int{}              // empty array, default capacity 16
+buf: Int{1024}          // initial capacity 1024
+```
+- **Type Annotations**: `(T){}` or unparenthesized `T{}` in signatures and fields (`parse: String => Entry{}`).
+- **Operations**:
+  - Append: `arr += 42`.
+  - Deep Copy: `++arr`.
+  - Element Count: `?arr`.
+  - Iteration: `arr @ elem => ...` or `arr @ elem, i => ...`.
+  - Bounds-checked Read: `arr(i)!!` (unwrap read) or `arr(i) | _ | _` (choice handle).
+  - Bounds-checked Write: `arr(i) = v !| _` (write-or-panic).
+
+## 5.3 The Four Ramification Shapes
 Ramifications represent binary outcomes with zero-cost runtime representations:
 1. `RamNN` (`<>`): Bare `i1` Flag (`<+>` / `<->`).
 2. `RamPN` (`< T | >`): Value presence or absence. Positive carries `T`; negative carries unit `()`.
@@ -133,11 +157,11 @@ Ramifications represent binary outcomes with zero-cost runtime representations:
 4. `RamPP` (`< T | E >`): Unboxed register aggregate `{ i1 tag, i64 payload }`. Out-of-bounds array reads and fallible operations return this shape.
 
 Constructors:
-- `<+ val +>`: Wraps `val` into the positive slot.
-- `<- err ->`: Wraps `err` into the negative slot.
+- `<+ val +>` / `<+ val ->`: Wraps `val` into the positive slot.
+- `<- err ->` / `<- err +>`: Wraps `err` into the negative slot.
 - `<++>` / `<-->`: Positive / negative unit instances.
 
-## 5.3 Monadic Bind (`$>>`) & Error Bubbling (`--!`)
+## 5.4 Monadic Bind (`$>>`) & Error Bubbling (`--!`)
 - Monadic Bind (`$>>`): Left-associative bind over ramifications. Named functions receive the positive payload directly:
   ```dva
   query_db(id) $>> validate $>> (u => <+ u +>)
@@ -155,10 +179,10 @@ Constructors:
 
 # 6. Memory Management: Strings & Builders
 
-- Strings are immutable. String concatenation (`s1 + s2`) allocates a fresh string buffer.
+- Strings are immutable fat pointers `{ len, data }`. Member access (`.len`, `.data`) is illegal.
 - Builders provide high-throughput mutable buffering:
   - Allocation: `b = {128}` allocates initial buffer capacity.
-  - Streaming: Use record notation `b = ("header", "\n", item, "\n")` or `b = (13, 10)`. Elements are written directly into the buffer without intermediate string allocations.
+  - Streaming with Record Syntax: `b += ("header", "\n", item, "\n")` or `b += (27, '[', code, 'm', s, 27, '[', '0', 'm')`. Elements (strings, runes, bytes) are written directly into the buffer without intermediate allocations.
   - Freeze (`+b`): Consumes and resets the Builder descriptor, transferring the buffer pointer directly into an immutable String with zero allocation.
   - Interop: `&b` yields the raw writable buffer address (`RawPtr`); `?b = n` sets the visible length after an external FFI read.
 
@@ -184,6 +208,7 @@ Foreign C symbols are declared under `#foreign "c"` with typed function signatur
    close: (fd: Int) => Int
    read: (fd: Int, buf: Addr, count: Int) => Int
    write: (fd: Int, buf: Addr, count: Int) => Int
+   isatty: (fd: Int) => Int
 
 read_file: String => < String | >
 read_file = path =>
@@ -201,9 +226,10 @@ read_file = path =>
 # 9. Standard Library Overview
 
 - `libc`: Direct POSIX C standard library functions (`open`, `close`, `read`, `write`, `socket`, `poll`, `malloc`, `free`).
-- `str`: String conversion, parsing, and inspection (`from_int`, `from_float`, `is_digit`, `split`, `trim`).
+- `str`: String conversion, parsing, and inspection (`from_int`, `from_float`, `to_int`, `is_digit`, `split`, `trim`).
 - `io`: Stream-based reading and console logging (`io::out`, `io::err`, `io::reader`, `io::read_all`, `io::read_line`).
 - `net` & `net/http`: Non-blocking TCP sockets, event polling, and HTTP request routing (`http::respond`, `http::path_of`).
+- `ccl`: Categorical Configuration Language parser, model, and formatter (`ccl::parse`, `ccl::build_hierarchy`, `ccl::get_string`).
 - `json`: High-performance JSON tokenization, streaming parser, and serialization.
 - `mem`: Arena allocators and memory blocks.
 
@@ -217,5 +243,6 @@ read_file = path =>
 - `E3027`: Equality comparison on unsupported non-enum ramifications.
 - `E3033`: Reassignment to an unprimed immutable binding.
 - `E3084`: Type unification failure.
+- `E3128`: Parameter types cannot be determined for function used as a value without declared signature.
 - `E3130`–`E3132`: Field initialization tracking errors (access of uninitialized composite field).
 - `E5001`–`E5011`: Driver, linker, and target compilation errors.

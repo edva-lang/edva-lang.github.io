@@ -35,12 +35,17 @@ Traditional control keywords (`if`, `else`, `for`, `while`, `fn`, `return`, `bre
 - There are NO `>=` or `<=` operators in Edva.
 - Comparison operators: `<`, `>`, `==`, `!=`, `!<`, `!>`.
 
-### 3. Choices & Pattern Matching
+### 3. Choices, Pattern Matching & Terseness
 - Choices evaluate a scrutinee against ordered branches: `x [guard] action | fallback`.
 - Value guard: `x [100] "perfect" [!< 90] "distinction" | "other"`.
+- Multi-value commatized guards: `x [1, 2, 3] action` (matches if `x` equals any item).
 - Equality matching: `x [target]` is equivalent to `x == target`. Never write `[== target]`.
+- Variant decomposition: `node [Str s] s | ...` extracts payloads from enum variants.
 - Statement choices do not require fallbacks: single-branch choices (`cond | action`) are standard statements (`.Unassignable` / `()`).
+- Trailing fallback to absence (`| <-->`) is implicit in expression choices expecting an optional/ramification return.
 - **Never insert dummy `| 0` fallbacks** in statement positions or side-effect functions.
+- **Expressions after `=`, `:=`, or in choice conditions must NEVER be in parentheses.** Write `x = a + b`, never `x = (a + b)`. Write `cond | action`, never `(cond) | action`.
+- **Favor point-free style** where applicable: write `get_string(root, path) | parse_int` instead of `get_string(root, path) | s => parse_int(s)`.
 
 ### 4. Ramifications & Binary Outcomes
 - Binary outcomes (presence/absence, success/failure) use four unboxed shapes:
@@ -48,7 +53,7 @@ Traditional control keywords (`if`, `else`, `for`, `while`, `fn`, `return`, `bre
   - `<T|>`: positive payload `T`, negative unit absence.
   - `<|E>`: positive unit success, negative payload `E`.
   - `<T|E>`: unboxed register aggregate `{ i1 tag, i64 payload }`.
-- Constructors: `<+ value +>` (positive), `<- error ->` (negative), `<++>` / `<-->` (unit).
+- Constructors: `<+ value +>` / `<+ value ->` (positive), `<- error ->` (negative), `<++>` / `<-->` (unit).
 - Positional matching: first branch is positive, second is negative (`res | ok => ... | err => ...`).
 - Monadic bind (`$>>`): chains fallible operations left-associatively (`query(id) $>> validate $>> (u => <+ u +>)`). Named functions receive the positive payload directly (`$>> validate`).
 - Postfix error propagation (`--!`): unwraps positive payload inline or early-returns negative branch (`cfg = parse(raw)--!`).
@@ -60,7 +65,8 @@ Traditional control keywords (`if`, `else`, `for`, `while`, `fn`, `return`, `bre
   - Raw/multiline strings use `(= ... =)` syntax: `body = (={"status": "ok"}=)`.
 - Builders are mutable in-place buffers:
   - Allocation: `b = {32}` creates an arena Builder with capacity hint 32.
-  - Growing: use record notation `b = ("# Title\n", "item: ", name, "\n")` or `b = (13, 10)` to stream strings/bytes directly into the buffer without intermediate string concatenation allocations (`+`).
+  - In-place append: `b += "hello"` or `b += c` (rune/byte).
+  - Record append: `b += (27, '[', code, 'm', s, 27, '[', '0', 'm')` streams strings, runes, and bytes directly into the builder without intermediate string concatenation allocations (`+`).
   - Buffer address: `&b` yields the writable buffer pointer for FFI reads (`libc::read(fd, &b, 4096)`).
   - Length setting: `?b = n` sets the visible length after an external read.
   - Freeze: `+b` transfers ownership to an immutable String in-place with zero memory allocation.
@@ -69,20 +75,41 @@ Traditional control keywords (`if`, `else`, `for`, `while`, `fn`, `return`, `bre
 - Assignment and binding uniformly use `=`.
 - Ordinary bindings and function parameters are permanently immutable.
 - Rebindable variables declare and rebind with a trailing prime (`'`): `x' = 10; x' = x' + 1; x'' = 20`.
-- Interior mutations on composites (`pt.x = 10`, `arr += 100`, `b = ("a", "b")`) do not require primed bindings.
+- Interior mutations on composites (`pt.x = 10`, `arr += 100`, `b += ("a", "b")`) do not require primed bindings.
 
-### 7. SIMD & Homogeneous Records
+### 7. Growable Arrays & Anonymous Collections
+- Dynamic growable arrays use the syntax `T{}` (or with capacity hint `T{cap}`):
+  - Type annotations and signatures: `arr: Int{}`, `nodes: Node{}`, `parse: String => Entry{}`.
+  - Avoid plural type aliases (e.g., `#type NodeList (Node){}`); use unparenthesized array types directly (`Node{}`).
+  - Variable initialization: `arr: Int{}` initializes an empty growable array; `arr: Int{64}` allocates with initial capacity.
+  - Append element: `arr += elem`.
+  - Element count: `?arr`.
+  - Element indexing: `arr(i)!!` (bounds-checked unwrap read) and `arr(i) = v !| _` (write-or-panic).
+  - Iteration: `arr @ elem => ...` binds each element; `arr @ elem, i => ...` binds element and index.
+
+### 8. SIMD & Homogeneous Records
 - Homogeneous records `(1, 2, 3, 4)` map directly to LLVM vector registers.
 - Support element-wise vector arithmetic: `v1 + v2`, `v * 2`, `v1 < v2`.
 - Postfix repetition splices flat records: `0 {8}` creates a record of 8 zeros.
 
-### 8. Intrinsics & Bitwise
+### 9. Intrinsics & Bitwise
 - Hardware intrinsics use `%` prefix: `%min`, `%max`, `%clamp`, `%abs`, `%dot`, `%sum`, `%shuffle`, `%usub_sat`.
 - Bit shifts: `.<.` (shift left) and `.>.` (shift right), masked to operand width - 1 to prevent LLVM undefined behavior.
 - Bitwise operators: `.&.` (AND), `.|.` (OR), `.!.` (unary NOT).
 
-### 9. Imports & Modules
-- Modules are imported with bare identifiers without quotes: `#use net`, `#use net/http`, `#use io`, `#use libc`.
+### 10. Imports, Packages & Visibility
+- Local/stdlib modules are imported with bare identifiers without quotes: `#use net`, `#use net/http`, `#use io`, `#use libc`.
+- Package dependencies use the `@alias` sigil:
+  - Root module: `#use @term` imports `src/<pkg>.dva` as `term::*`.
+  - Submodule: `#use @term/color` imports `src/color.dva` as `color::*`.
+  - Direct dependencies only: a package can only `#use @dep` for dependencies declared in its own `edva.ccl`.
+- Unqualified import: `#use(import) str` brings symbols into current scope without `str::` prefix.
+- Dynamic hot-reload: `#use(dynamic) views`.
+- Visibility:
+  - Public export: declarations enclosed in a `#public` block are exported.
+  - Private by default: declarations outside `#public` are private to the module.
+  - Package-private: modules under `src/internal/` can only be imported from within the same package.
+  - Modules without `#public` export nothing across package boundaries.
 - `#foreign "c"` declares C ABI bindings with typed signatures.
 
 ---
@@ -123,10 +150,27 @@ read_file = path =>
 
 ### 3. Pipeline & Cycle Escape
 ```dva
-find_first_even: (Int[]) => < Int | >
+find_first_even: Int{} => < Int | >
 find_first_even = items =>
    items @ x =>
       x % 2 [0] -->
    >--
       x
+```
+
+### 4. Point-Free Choice Pipeline & Builder Record
+```dva
+#use str
+
+parse_int: String => < Int | >
+parse_int = s => str::to_int(s) | pair => <+ pair.0 ->
+
+get_port: < String | > => < Int | >
+get_port = opt => opt | parse_int
+
+format_badge: String, String => String
+format_badge = label, text =>
+   b = {?label + ?text + 16}
+   b += ("[", label, "] ", text)
+   +b
 ```
