@@ -15,7 +15,7 @@
   - `>=` and `<=` do NOT exist in the language.
 - **Binding Mutability**: Edva uses `=` uniformly for bindings and reassignments. Bindings are immutable by default. Rebindable local variables use trailing prime (`'`) identifiers (`x' = 1; x' = x' + 1`). Parameters are strictly immutable. Interior mutations (`pt.x = 1`, `b += ("a", "b")`, `arr += 1`) do not require primed bindings.
 - **Clean Choices**: A single-branch choice `cond | action` evaluates as a statement. Never supply dummy `| 0` fallbacks in statement positions.
-- **Code Terseness & No Parens**: Expressions after `=`, `:=`, or in choice conditions must NEVER be parenthesized. Write `x = a + b`, not `x = (a + b)`. Write `cond | action`, not `(cond) | action`.
+- **Code Terseness & No Parens**: Expressions after `=` or in choice conditions must NEVER be parenthesized. Write `x = a + b`, not `x = (a + b)`. Write `cond | action`, not `(cond) | action`.
 - **Favor Point-Free Style**: Prefer point-free choice pipelines and function passing where applicable (e.g. `get_string(root, path) | parse_int` instead of `| s => parse_int(s)`).
 - **Direct Anonymous Array Types**: Use unparenthesized array types directly (`Node{}`, `Entry{}`, `Int{}`). Avoid plural type aliases (`NodeList`).
 - **Indentation & Line Length**: Code uses consistent space-only indentation. Line lengths should not exceed 100 characters.
@@ -185,7 +185,7 @@ Constructors:
   - Allocation: `b = {128}` allocates initial buffer capacity.
   - Streaming with Record Syntax: `b += ("header", "\n", item, "\n")` or `b += (27, '[', code, 'm', s, 27, '[', '0', 'm')`. Elements (strings, runes, bytes) are written directly into the buffer without intermediate allocations.
   - Freeze (`+b`): Consumes and resets the Builder descriptor, transferring the buffer pointer directly into an immutable String with zero allocation.
-  - Interop: `&b` yields the raw writable buffer address (`RawPtr`); `?b = n` sets the visible length after an external FFI read.
+  - Interop: `&b` yields the raw writable buffer address (`Addr`); `?b = n` sets the visible length after an external FFI read.
 
 ---
 

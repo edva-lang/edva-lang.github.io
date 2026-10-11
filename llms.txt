@@ -44,7 +44,7 @@ Traditional control keywords (`if`, `else`, `for`, `while`, `fn`, `return`, `bre
 - Statement choices do not require fallbacks: single-branch choices (`cond | action`) are standard statements (`.Unassignable` / `()`).
 - Trailing fallback to absence (`| <-->`) is implicit in expression choices expecting an optional/ramification return.
 - **Never insert dummy `| 0` fallbacks** in statement positions or side-effect functions.
-- **Expressions after `=`, `:=`, or in choice conditions must NEVER be in parentheses.** Write `x = a + b`, never `x = (a + b)`. Write `cond | action`, never `(cond) | action`.
+- **Expressions after `=` or in choice conditions must NEVER be in parentheses.** Write `x = a + b`, never `x = (a + b)`. Write `cond | action`, never `(cond) | action`.
 - **Favor point-free style** where applicable: write `get_string(root, path) | parse_int` instead of `get_string(root, path) | s => parse_int(s)`.
 
 ### 4. Ramifications & Binary Outcomes
