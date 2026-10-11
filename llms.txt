@@ -63,6 +63,7 @@ Traditional control keywords (`if`, `else`, `for`, `while`, `fn`, `return`, `bre
   - Length is measured with unary prefix `?s`.
   - String data address is accessed via unary `&s`.
   - Raw/multiline strings use `(= ... =)` syntax: `body = (={"status": "ok"}=)`.
+  - Here-Docs use `"""..."""` multiline blocks with baseline margin stripping, line continuation `\`, and `${expr}` dynamic interpolation.
 - Builders are mutable in-place buffers:
   - Allocation: `b = {32}` creates an arena Builder with capacity hint 32.
   - In-place append: `b += "hello"` or `b += c` (rune/byte).

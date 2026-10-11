@@ -193,6 +193,32 @@ main {
    margin-bottom: 3.5rem;
 }
 
+.brand-logo-wrap {
+   display: inline-flex;
+   justify-content: center;
+   align-items: center;
+   margin-bottom: 0.75rem;
+}
+
+.brand-logo {
+   width: 76px;
+   height: auto;
+   color: var(--accent-mint);
+   filter: drop-shadow(0 4px 12px rgba(11, 128, 93, 0.15));
+   transition:
+      transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      color 0.25s ease,
+      filter 0.3s ease;
+}
+
+.brand-logo:hover {
+   transform: translateY(-3px) scale(1.04);
+}
+
+[data-theme="dark"] .brand-logo {
+   filter: drop-shadow(0 0 22px rgba(119, 242, 193, 0.3));
+}
+
 .brand-title {
    font-family: "Gloock", serif;
    font-weight: 500;
