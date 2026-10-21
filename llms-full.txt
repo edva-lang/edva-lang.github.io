@@ -1,51 +1,72 @@
-# Edva Language Specification & Comprehensive Reference (llms-full.txt)
+# Edva Language Guide & Extended Reference (llms-full.txt)
 
-> This document contains the complete reference specification, grammar rules, type system, operator tables, and standard library overview for the Edva programming language (`edva`), compiled into a single file for direct ingestion by Large Language Models and AI coding agents.
+> This document contains a curated language reference, grammar rules, operational semantics,
+> operator tables, and standard library guide for the Edva programming language (`edva`),
+> formatted for ingestion by Large Language Models and AI coding agents. Complete, maintained
+> module-by-module documentation is available in the Quarto reference at `doc/reference/stdlib/`.
 
 ---
 
 # 1. Core Principles & Hard Rules
 
-- **Zero Bare Keywords**: Words such as `if`, `else`, `for`, `while`, `fn`, `return`, `continue`, `import`, and `break` are ordinary identifiers with no special syntactic meaning. Control flow is unified into symbolic expressions.
-- **No RTTI, Ever**: Types are fully erased at runtime. Function values are `{ fn_ptr, env_ptr }` closures. All polymorphism and function types are statically verified and resolved.
-- **No Defaulting to Int**: The compiler never silently coerces ambiguous literals or expressions to `Int`. Type errors are reported instead.
+- **Zero Bare Keywords**: Words such as `if`, `else`, `for`, `while`, `fn`, `return`,
+  `continue`, `import`, and `break` are ordinary identifiers with no special syntactic
+  meaning. Control flow is unified into symbolic expressions.
+- **No RTTI, Ever**: Types are fully erased at runtime. Function values are `{ fn_ptr, env_ptr }`
+  closures. All polymorphism and function types are statically verified and resolved.
+- **Integer Literals & No Defaulting to Int**:
+  - Unsuffixed integer literals evaluate to the current default integer type (`Int` by default,
+    or as configured by `#pragma number <type>`).
+  - No Defaulting to Int: The type system never silently coerces ambiguous expressions or
+    unresolved type variables to `Int`. Ambiguous or unknowable types must be annotated explicitly
+    or produce a compile-time error (`E3103`).
 - **Binary Comparisons**: Comparison operators are `<`, `>`, `==`, `!=`, `!<`, and `!>`.
-  - Greater-than-or-equal is written as `!<` ("not less than").
-  - Less-than-or-equal is written as `!>` ("not greater than").
+  - Greater-than-or-equal is written as `!<` (reads as "greater or equal").
+  - Less-than-or-equal is written as `!>` (reads as "less or equal").
   - `>=` and `<=` do NOT exist in the language.
-- **Binding Mutability**: Edva uses `=` uniformly for bindings and reassignments. Bindings are immutable by default. Rebindable local variables use trailing prime (`'`) identifiers (`x' = 1; x' = x' + 1`). Parameters are strictly immutable. Interior mutations (`pt.x = 1`, `b += ("a", "b")`, `arr += 1`) do not require primed bindings.
-- **Clean Choices**: A single-branch choice `cond | action` evaluates as a statement. Never supply dummy `| 0` fallbacks in statement positions.
-- **Code Terseness & No Parens**: Expressions after `=` or in choice conditions must NEVER be parenthesized. Write `x = a + b`, not `x = (a + b)`. Write `cond | action`, not `(cond) | action`.
-- **Favor Point-Free Style**: Prefer point-free choice pipelines and function passing where applicable (e.g. `get_string(root, path) | parse_int` instead of `| s => parse_int(s)`).
-- **Direct Anonymous Array Types**: Use unparenthesized array types directly (`Node{}`, `Entry{}`, `Int{}`). Avoid plural type aliases (`NodeList`).
-- **Indentation & Line Length**: Code uses consistent space-only indentation. Line lengths should not exceed 100 characters.
+  - On floating-point values, `!<` and `!>` are ordered comparisons (LLVM `OGE` / `OLE`). If either
+    operand is NaN, the comparison evaluates to false (`<->`). This is distinct from logical
+    negation: for NaN `x`, `x !< 1.0` is false, while `!(x < 1.0)` is true.
+- **Binding Mutability**: Edva uses `=` uniformly for bindings and reassignments. Bindings are
+  immutable by default. Rebindable local variables use trailing prime (`'`) identifiers
+  (`x' = 1; x' = x' + 1`). Parameters are strictly immutable. Interior mutations (`pt.x = 1`,
+  `arr += 1`, `b += "x"`) do not require primed bindings.
+- **Clean Choices**: A single-branch choice `cond | action` evaluates as a statement. Never supply
+  dummy `| 0` fallbacks in statement positions.
+- **Unquoted Imports**: Module imports use bare identifiers: `#use net`, `#use io`, `#use libc`.
+- **Indentation & Line Length**: Code uses consistent space-only indentation. Line lengths must
+  not exceed 100 characters.
 
 ---
 
 # 2. Lexical Structure
 
-## 2.1 Identifiers & Directives
-Identifiers conform to UAX31. Dva has zero bare keywords. Directives start with `#`:
-- `#use`: imports a module:
-  - Local / stdlib: `#use net`, `#use str`, `#use net/http`.
-  - Package dependencies: `#use @alias` (imports root module `src/<pkg>.dva` as `alias::*`), `#use @alias/submod` (imports `src/submod.dva` as `submod::*`).
-  - Unqualified import: `#use(import) str` brings symbols into current scope without `str::` prefix.
-  - Dynamic hot-reload: `#use(dynamic) views`.
+## 2.1 Identifiers & Keywords
+Identifiers conform to UAX31. Edva has zero bare keywords. Directives start with `#`:
+- `#use`: imports a module (`#use net`, `#use str`).
 - `#type`: declares a nominal record, ram, or enum type (`#type Point (x: Int, y: Int)`).
 - `#foreign`: declares foreign C ABI functions (`#foreign "c"`).
-- `#public` / `#private`: access visibility directives. Declarations outside `#public` are private to the module. Modules under `src/internal/` are package-private.
+- `#public` / `#private`: access visibility directives.
 - `#!`: compile-time evaluation.
+- `#pragma number <type>`: switches default integer literal type (`i16`, `i32`, `i64`, `default`).
 
 ## 2.2 Literals
-- **Integers**: Decimal (`42`), Hexadecimal (`0x2A`), Binary (`0b101010`). Explicit type suffixes: `5i16`, `0xFFu8`, `100u32`, `9i64`.
-- **Floats**: `3.14`, `0.5`, `1.0e-5`. Dangling dots (`.5`, `1.`) are illegal.
+- **Integers**: Decimal (`42`), Hexadecimal (`0x2A`), Binary (`0b101010`), Octal (`0o755`), Repeating (`0b1{4}`, `10{6}`, `0b1{48}`).
+  Limits: `0max`, `0min` (with optional suffixes: `0maxu64`, `0mini32`).
+  Explicit type suffixes: `5i16`, `0xFFu8`, `100u32`, `9i64`, `0b1{32}u32`.
+- **Floats**: `3.14`, `0.5`, `1.0e-5`. Built-in FP constants: `-.0` (negative zero), `.inf`, `-.inf` (infinities),
+  `.nan` (quiet NaN), `.max`, `-.max` (finite bounds), `.min` (minimal positive normal), `.sub` (minimal positive subnormal),
+  with optional suffixes (`.nanf32`, `.maxf32`, `-.0f32`). Dangling dots (`.5`, `1.`) are illegal.
 - **Runes**: Single Unicode codepoints: `'a'`, `'🔥'`, `'\n'`.
 - **Strings**:
-  - Escaped: `"hello\nworld"`
-  - Raw / Multiline: `(={"status": "ok", "count": 1}=)` (enclosed in `(= ... =)`, eliminating escaping).
-  - Here-Doc: `"""..."""` multiline blocks with baseline margin stripping, line continuation `\`, and `${expr}` dynamic interpolation.
-- **Repetition**: `expr {N}` generates a record containing `N` flat copies of `expr` (e.g., `0 {8}` produces `(0, 0, 0, 0, 0, 0, 0, 0)`).
-- **Builder Literal**: `{expr}` starting an expression creates a mutable Builder buffer with initial capacity `expr` (e.g., `{64}`).
+  - Escaped & Unified: `"hello\nworld"` or multiline `"\n    line 1\n    line 2\n    "`.
+    Supports margin stripping when starting with `"\n`, line continuation `\`,
+    and `${expr}` dynamic interpolation for scalar primitives (lowered via the `%to_str`
+    intrinsic without requiring `#use str`). Triple-quote `"""` is retired.
+- **Repetition**: `expr {N}` generates a record containing `N` flat copies of `expr`
+  (e.g., `0 {8}` produces `(0, 0, 0, 0, 0, 0, 0, 0)`).
+- **Builder Literal**: `{expr}` starting an expression creates a mutable Builder buffer with
+  initial capacity `expr` (e.g., `{64}`).
 
 ---
 
@@ -53,56 +74,76 @@ Identifiers conform to UAX31. Dva has zero bare keywords. Directives start with 
 
 The operator precedence hierarchy is organized into binding tiers (from loosest to tightest):
 
-| Tier | Category | Operators | Assoc | Description |
-|:-----|:---------|:----------|:------|:------------|
-| 1 | Statements & Jumps | `;` | Left | Inline statement sequence |
-| 2 | Cycle Jumps | `-->`, `--^`, `>--` | None | Break, continue, and cycle-escape |
-| 3 | Pipe Infix Apply | `$` | Right | Infix multi-argument application `f(a) $ b` == `f(a, b)` |
-| 4 | Pipe Feed & Bind | `$>`, `$>>` | Left | Feed `x $> f(a)` == `f(x, a)`; Monadic bind `x $>> f` |
-| 5 | Choice & Branches | `[guard]`, `|`, `!|` | Left | Pattern match branches and fallbacks |
-| 6 | Logical Short-circuit | `||`, `&&` | Left | Short-circuit boolean/ram evaluation |
-| 7 | Bitwise Logic | `.|.`, `.&.` | Left | Bitwise OR and AND |
-| 8 | Comparisons | `==`, `!=`, `<`, `>`, `!<`, `!>` | None | Value, structural equality, and ordering |
-| 9 | Bit Shifts | `.<.`, `.>.` | Left | Zero-fill logical left/right shifts |
-| 10 | Addition & Concatenation | `+`, `-` | Left | Arithmetic, String concat, Builder append |
-| 11 | Multiplication & Division | `*`, `/`, `%` | Left | Arithmetic multiply, divide, and modulo |
-| 12 | Unary Prefix | `!`, `+`, `&`, `?`, `.!.`, `++`, `--!` | Right | Negation, freeze (`+b`), pointer (`&s`), length (`?s`), bitwise NOT, error unwrap |
-| 13 | Primary & Subscript | `( )`, `(i)`, `.field`, `@` | Left | Grouping, indexing, field access, cycle iteration |
+<!-- BEGIN operators.yaml -->
+| Tier | LBP | RBP | Operators | Associativity |
+|---|---|---|---|---|
+| cycle | 10 | 20 | `@` `@@` `>--` `-->` `--^` | left |
+| sequence | 20 | 30 | `;` | left |
+| apply | 30 | 30 | `$` `$:` | right |
+| feed | 40 | 50 | `$>` `$>>` | left |
+| choice | 50 | 60 | `|` `[pattern]` `!|` `|->` `|+>` `|-->` `|++>` | left |
+| assignment | 60 | 50 | `=` `:=` `+=` `::=` | right |
+| range | 70 | 80 | `..` | left |
+| logical or | 80 | 90 | `||` | left |
+| logical and | 90 | 100 | `&&` | left |
+| bitwise or | 100 | 105 | `.|.` | left |
+| bitwise xor | 105 | 110 | `.^.` | left |
+| bitwise and | 110 | 120 | `.&.` | left |
+| comparison | 120 | 130 | `<` `>` `==` `!=` `!<` `!>` | left, same-line |
+| shift | 130 | 140 | `.<.` `.>.` | left |
+| addition | 140 | 150 | `+` `-` | left |
+| multiplication | 150 | 160 | `*` `/` `%` | left |
+| unary prefix | 160 | 180 | `!` `+` `&` `++` `.!.` `~~` `?` `??` `-x` `#size` | right |
+| postfix / apply | 170 | 180 | `call ()` `.` `::` `: cast` `{N}` `@[...]` `!!` `--!` | left |
+| primary | 180 | 180 | `primary` | left |
+
+<!-- END operators.yaml -->
+
+Notable precedence facts:
+- `$>` (feed) and `$` (infix apply) sit below the choice tier:
+  `f(a) $ b` == `f(a, b)` (append), `x $> f(a)` == `f(x, a)` (prepend).
+  `$>` is left-associative, `$` is right-associative.
+- Postfix `--!` (error propagation) sits in the postfix / apply tier (tier 18).
+- Cycle jumps (`-->`, `--^`) and cycle escape (`>--`) sit in the cycle tier (tier 1).
+- Bitwise precedence is C-style: `||` < `&&` < `.|.` < `.&.` < comparison < `.<.` `.>.`
+  < `+` `-` < `*` `/` `%`.
 
 ---
 
 # 4. Control Flow: Choices & Cycles
 
 ## 4.1 Choice Expressions
-Choices replace `if`, `switch`, and pattern matching. A choice consists of a scrutinee, an ordered chain of guarded branches, and an optional fallback:
-```dva
+Choices replace `if`, `switch`, and pattern matching. A choice consists of a scrutinee, an
+ordered chain of guarded branches, and an optional fallback:
+```dva complete
+classify: Int => String
 classify = score =>
    score [100]       "perfect"
-         [!< 90]     "distinction"
-         [!< 50]     "pass"
+         [> 89]      "distinction"
+         [> 49]      "pass"
          |           "fail"
 ```
 
 - **Guards**:
   - `[val]`: Equality test (`x [target]` == `x == target`).
   - `[1, 2, 3]`: Comma-separated value OR-list (matches if `x` equals any item).
-  - `[!< 90]`: Predicate section comparison.
-  - `[Variant(payload)]`: Tagged enum variant decomposition.
+  - `[> 89]`: Operator section predicate comparison.
+  - `[Variant]`: Unit enum variant match (or payload-ignoring match; `[Variant _]` is disallowed).
+  - `[V1, V2]`: Multi-variant OR guard.
+  - `[Variant payload]`: Tagged enum variant payload binding (space-separated juxtaposition without parentheses; parentheses introduce a nested tuple/record subpattern such as `[Add (a, b)]`; construct enums with `Enum(Variant)` or `Enum(Variant, payload)`).
 - **Statement Choices**: Single-branch choices without fallbacks evaluate for side effects:
-  ```dva
-  has_error | log("Error detected")
-  ```
-- **Implicit Absence Fallback**: In expression choices returning an optional/ramification, a trailing `| <-->` is implicit if not provided.
-- **Point-Free Handlers**: Unpack ramifications directly by passing handler functions: `get_val() | parse_int`.
+```dva partial reason="statement choice fragment"
+has_error | log("Error detected")
+```
 
 ## 4.2 Cycles & Control
 Iteration is performed using `@`:
-```dva
+```dva partial reason="cycle jump fragment"
 // Iterate over an integer range (0 to count-1)
 0..count @ i =>
    i [2] --^         // --^ skips this iteration (continue)
    i [8] -->         // --> terminates the loop (break)
-   io::out(i)
+   io::out $ i
 ```
 
 Multi-level jumps support integer suffixes: `-->2` breaks out of two enclosing loops.
@@ -111,7 +152,7 @@ Multi-level jumps support integer suffixes: `-->2` breaks out of two enclosing l
 Appending `>-- BranchBody` turns a cycle into an expression returning `RamPN` `< T | >`:
 - If the cycle breaks via `-->`, the branch evaluates and returns `<+ branch_value +>`.
 - If the cycle completes normally without breaking, the result is `<-->` (negative unit):
-```dva
+```dva complete
 find_target: Int, Int => < Int | >
 find_target = count, target =>
    0..count @ i =>
@@ -120,96 +161,127 @@ find_target = count, target =>
       target
 ```
 
+## 4.4 Early Return (`--|`)
+Functions exit early using `--|`:
+- `--| value`: Returns `value` immediately; must match the function's declared return type.
+- Bare `--|`: Early return from a void function (`() => ()`).
+
+```dva complete
+clamp: Int, Int, Int => Int
+clamp = x, lo, hi =>
+   x < lo | --| lo
+   x > hi | --| hi
+   x
+```
+
+## 4.5 Ram Branch Return Sugars
+Choice branches can return unit ramifications directly from an enclosing function:
+- `cond |->` desugars to `cond | --| <->` (`RamNN` `<>` Flag negative / false)
+- `cond |+>` desugars to `cond | --| <+>` (`RamNN` `<>` Flag positive / true)
+- `cond |-->` desugars to `cond | --| <-->` (`RamPN` `< T | >` negative unit / absence)
+- `cond |++>` desugars to `cond | --| <++>` (`RamNP` `< | E >` positive unit / success)
+
+```dva complete
+find_positive: Int => < Int | >
+find_positive = n =>
+   n !> 0 |-->
+   <+ n +>
+```
+
 ---
 
 # 5. Type System & Algebraic Ramifications
 
 ## 5.1 Primitive Types
-- `Int`: 64-bit signed integer (`i64`).
+- `Int`: Fixed 64-bit signed integer (`i64`) on all architectures (no `isize`/`usize`).
 - `Float`: 64-bit IEEE 754 floating point (`double`).
 - `String`: Immutable UTF-8 fat pointer `{ i64 len, i8* data }`.
 - `Builder`: Mutable byte buffer `{ i64 len, i8* data, i64 cap }*`.
-- `Rune`: 64-bit Unicode scalar value.
-- `Addr`: Raw memory address for FFI pointers.
+- `Rune`: 32-bit Unicode scalar value (`i32`).
+- `Addr`: Raw memory address (architecture-dependent: 4 bytes on 32-bit, 8 bytes on 64-bit). Casts via `Addr(...)` are strictly restricted to integerish types (`Int`, `i8`..`u64`) and pointers. Memory addresses of strings, builders, records, and call-argument scalars are obtained via `&`.
 - `Flag`: Bare boolean (`i1`), constructed with `<+>` (true) or `<->` (false).
 - `Error`: Standard error record `(code: Int, msg: String, file: String, line: Int, col: Int, context: (Int, Int))`.
 
-## 5.2 Growable Arrays (`T{}` or `(T){}`)
-Growable arrays are dynamically-sized collections:
-```dva
-// Variable initialization
-arr: Int{}              // empty array, default capacity 16
-buf: Int{1024}          // initial capacity 1024
-```
-- **Type Annotations**: `(T){}` or unparenthesized `T{}` in signatures and fields (`parse: String => Entry{}`).
-- **Operations**:
-  - Append: `arr += 42`.
-  - Deep Copy: `++arr`.
-  - Element Count: `?arr`.
-  - Iteration: `arr @ elem => ...` or `arr @ elem, i => ...`.
-  - Bounds-checked Read: `arr(i)!!` (unwrap read) or `arr(i) | _ | _` (choice handle).
-  - Bounds-checked Write: `arr(i) = v !| _` (write-or-panic).
-
-## 5.3 The Four Ramification Shapes
+## 5.2 The Four Ramification Shapes & Constructors
 Ramifications represent binary outcomes with zero-cost runtime representations:
-1. `RamNN` (`<>`): Bare `i1` Flag (`<+>` / `<->`).
-2. `RamPN` (`< T | >`): Value presence or absence. Positive carries `T`; negative carries unit `()`.
+1. `RamNN` (`<>`): Bare `i1` Flag.
+   - Positive constant: `<+>`
+   - Negative constant: `<->`
+2. `RamPN` (`< T | >`): Option / value presence. Positive carries `T`; negative carries unit `()`.
+   - Positive constructor: `<+ val +>`
+   - Negative unit constant: `<-->`
 3. `RamNP` (`< | E >`): Success or error payload. Positive carries unit `()`; negative carries `E`.
-4. `RamPP` (`< T | E >`): Unboxed register aggregate `{ i1 tag, i64 payload }`. Out-of-bounds array reads and fallible operations return this shape.
+   - Positive unit constant: `<++>`
+   - Negative constructor: `<- err ->`
+4. `RamPP` (`< T | E >`): Two-payload result. Unboxed register aggregate `{ i1 tag, i64 payload }`.
+   - Positive constructor: `<+ val ->`
+   - Negative constructor: `<- err +>`
 
-Constructors:
-- `<+ val +>` / `<+ val ->`: Wraps `val` into the positive slot.
-- `<- err ->` / `<- err +>`: Wraps `err` into the negative slot.
-- `<++>` / `<-->`: Positive / negative unit instances.
+Payload constructors close with `+>` or `->` (never bare `>`). Single-payload rams with
+pointer payloads (`String`, `Record`) use null-pointer niche optimization (`ptr`, where null
+is absence/unit, 0 extra tag bits). In `RamPP`, the `i1 tag` is a runtime polarity discriminant
+(not RTTI; types are fully erased). The four shapes are distinct static types with incompatible
+representations; there is no implicit coercion between them.
 
-## 5.4 Monadic Bind (`$>>`) & Error Bubbling (`--!`)
-- Monadic Bind (`$>>`): Left-associative bind over ramifications. Named functions receive the positive payload directly:
+In expression position, an inexhaustive choice whose non-jump branches all produce `RamPN`
+(`< T | >`) or `RamNP` (`< | E >`) automatically synthesizes an implicit fallback branch:
+`| <-->` for `RamPN` (absence) or `| <++>` for `RamNP` (success).
+
+## 5.3 Monadic Bind (`$>>`) & Error Bubbling (`--!`)
+- Monadic Bind (`$>>`): Left-associative bind over ramifications with a positive payload
+  (`RamPP` or `RamPN`). Named functions receive the positive payload directly.
+- Postfix Error Propagation (`--!`): Unwraps a positive payload inline or early-returns the
+  negative error from the enclosing function:
   ```dva
-  query_db(id) $>> validate $>> (u => <+ u +>)
-  ```
-- Postfix Error Propagation (`--!`): Unwraps a positive payload inline or early-returns the negative error from the enclosing function:
-  ```dva
-  load_config: String => < Config | Error >
-  load_config = path =>
-     raw = io::read_file(path)--!
-     cfg = json::parse(raw)--!
-     <+ cfg +>
+  step_a: Int => < Int | String >
+  step_a = x =>
+     x < 0 | <- "negative" +> | <+ x * 2 ->
+
+  step_b: Int => < Int | String >
+  step_b = x =>
+     x == 0 | <- "zero" +> | <+ 100 / x ->
+
+  compute: Int, Int => < Int | String >
+  compute = a, b =>
+     v1 = step_a(a)--!
+     v2 = step_b(b)--!
+     <+ v1 + v2 ->
   ```
 
 ---
 
 # 6. Memory Management: Strings & Builders
 
-- Strings are immutable fat pointers `{ len, data }`. Member access (`.len`, `.data`) is illegal.
+- Strings are immutable. String concatenation (`s1 + s2`) allocates a fresh string buffer.
 - Builders provide high-throughput mutable buffering:
   - Allocation: `b = {128}` allocates initial buffer capacity.
-  - Streaming with Record Syntax: `b += ("header", "\n", item, "\n")` or `b += (27, '[', code, 'm', s, 27, '[', '0', 'm')`. Elements (strings, runes, bytes) are written directly into the buffer without intermediate allocations.
-  - Freeze (`+b`): Consumes and resets the Builder descriptor, transferring the buffer pointer directly into an immutable String with zero allocation.
-  - Interop: `&b` yields the raw writable buffer address (`Addr`); `?b = n` sets the visible length after an external FFI read.
+  - In-place append: `b += "text"`, `b += 'A'`, or homogeneous records `b += (13, 10)`.
+  - Freeze (`+b`): Consumes and resets the Builder descriptor, transferring the buffer pointer
+    directly into an immutable String in place (allocating only the 16-byte String descriptor
+    in the active arena without copying bytes).
+  - Interop: `&b` yields the writable buffer address (`Addr`); `&s` yields the string data pointer; `&rec` yields a record/tuple pointer; `&scalar` yields a scalar address in call-argument position (e.g. FFI out-parameters); `?b = n` sets the active length after an external FFI read.
 
 ---
 
 # 7. Hardware Acceleration & LLVM Intrinsics
 
 Intrinsics are prefixed with `%` and lower directly into LLVM IR instructions:
-- **Math**: `%min(a, b)`, `%max(a, b)`, `%clamp(val, min, max)`, `%abs(x)`, `%sqrt(x)`, `%sin(x)`, `%cos(x)`, `%pow(base, exp)`.
+- **Math**: `%min(a, b)`, `%max(a, b)`, `%clamp(val, min, max)`, `%abs(x)`, `%sqrt(x)`.
 - **Saturating Arithmetic**: `%uadd_sat(a, b)`, `%usub_sat(a, b)`.
 - **Vector Reductions**: `%sum(vec)`, `%prod(vec)`, `%dot(v1, v2)`.
-- **Vector Shuffling**: `%shuffle(v1, mask)` or `%shuffle(v1, v2, mask)`.
-- **Memory**: `%memcpy(dst, src, len)`, `%memmove(dst, src, len)`, `%memset(dst, val, len)`.
+- **Memory**: `%memcpy(dst, src, len)`, `%memmove(dst, src, len)`, `%memset(dst, val, len)`, `%ptrmask(ptr, mask)`.
+- **String Conversion**: `%to_str(scalar)` converts scalar primitives (`Int`, `UInt`, `Float`, `Rune`, `String`) into an arena-allocated `String` (used as the underlying lowering for `"${expr}"` interpolation).
 
 ---
 
 # 8. POSIX & Foreign Function Interface (FFI)
 
 Foreign C symbols are declared under `#foreign "c"` with typed function signatures:
-```dva
+```dva complete
 #foreign "c"
    open: (path: String, flags: Int) => Int
    close: (fd: Int) => Int
    read: (fd: Int, buf: Addr, count: Int) => Int
-   write: (fd: Int, buf: Addr, count: Int) => Int
-   isatty: (fd: Int) => Int
 
 read_file: String => < String | >
 read_file = path =>
@@ -219,20 +291,59 @@ read_file = path =>
       b = {4096}
       n = read(fd, &b, 4096)
       close(fd)
-      n > 0 | (?b = n; <+ +b ->) | <-->
+      n > 0 | (?b = n; <+ +b +>) | <-->
 ```
 
 ---
 
-# 9. Standard Library Overview
+# 9. Standard Library Overview & Module Contracts
 
-- `libc`: Direct POSIX C standard library functions (`open`, `close`, `read`, `write`, `socket`, `poll`, `malloc`, `free`).
-- `str`: String conversion, parsing, and inspection (`from_int`, `from_float`, `to_int`, `is_digit`, `split`, `trim`).
-- `io`: Stream-based reading and console logging (`io::out`, `io::err`, `io::reader`, `io::read_all`, `io::read_line`).
-- `net` & `net/http`: Non-blocking TCP sockets, event polling, and HTTP request routing (`http::respond`, `http::path_of`).
-- `ccl`: Categorical Configuration Language parser, model, and formatter (`ccl::parse`, `ccl::build_hierarchy`, `ccl::get_string`).
-- `json`: High-performance JSON tokenization, streaming parser, and serialization.
-- `mem`: Arena allocators and memory blocks.
+Complete reference documentation for each module is maintained in `doc/reference/stdlib/`.
+
+- **`io`**: Stream-based buffered reading (`Reader`, `read_line`, `read_all`) and console logging
+  (`out`, `outs`, `err`, `errs`, `outf`, `errf`).
+  - *Contract*: Output helpers (`out`, `outs`, `err`, `errs`, `outf`, `errf`) loop across partial transfers, retry on `EINTR`, and return `()`. Low-level `io::write(fd, s)` returns total bytes transferred (`Int`, or `-1` on initial error).
+- **`fs`**: High-level safe filesystem operations, paths, directory traversal, and capacity stats.
+  - *Functions*: `join`, `parent`, `basename`, `ext`, `is_abs`, `cwd`, `home`, `resolve`, `read_to_string`,
+    `write_file`, `copy_file`, `rename_path`, `remove`, `remove_all`, `create_dir`, `create_dir_all`, `stat`,
+    `lstat_meta`, `exists`, `is_file`, `is_dir`, `is_symlink`, `mtime`, `size`, `readlink_path`, `read_dir`,
+    `list_dir`, `space`, `get_fs_stats`, `format_size`, `format_perms`, `format_time`, `format_number`,
+    `auto_rename_path`.
+  - *Contract*: Uses typed `#packed` records (`StatRaw`, `Statvfs`, `DirentPrefix`) and safe options `<T | >`.
+- **`in`**: Singleton standard-input reader wrapping `stdin_r`.
+  - *Functions*: `read_line(max)`, `read_bytes(max)`, `read_byte!`, `read_until(delim, max)`.
+  - *Status*: `err!` (last errno), `eof!` (clean EOF), `would_block!` (`EAGAIN`), `has_err!`, `clear!`.
+- **`str`**: Byte-oriented string predicates, scalar conversions, ordering, and digit parsing.
+  - *Functions*: `from_byte`, `from_int`, `from_float`, `hex_to_str`, `to_int`, `to_hex`, `cmp`, `lt`, `is_digit`, `is_alpha`, `is_alnum`, `is_ws`, `is_hex`.
+- **`unicode`** & **`utf`**: Unicode general category classification and UTF-8 rune encoding/decoding (`decode_rune`, `utf8_width`, `encode_rune`, `append_rune`).
+- **`net` & `net/http`**: TCP networking and HTTP/1.1 protocol handling.
+  - *Network*: `tcp_listen`, `tcp_accept`, `tcp_connect`, `send_str`, `recv`, `close_fd: Int => Int`.
+  - *HTTP*: `read_request`, `path_of`, `header`, `response`, `respond(fd, status, content_type, body)`.
+  - *Contract*: Request reading rejects unsupported `Transfer-Encoding`, enforces Content-Length bounds,
+    and returns `Req(<- "incomplete body" +>)` on truncated payloads.
+- **`json`**: Whole-document JSON parser (`json::parse: String => <Value | Error>`).
+  - *Types*: `Value` (`String`, `Number`, `Boolean`, `Null`, `Array`, `Object`).
+  - *Contract*: Uses module-global `::src`/`::pos` state; **not reentrant and not thread-safe**.
+    Concurrent calls must be synchronized or run in separate processes. Raw strings are validated
+    for strict UTF-8 (rejecting overlong encodings, invalid continuation/lead bytes, surrogate halves
+    `0xD800`–`0xDFFF`, and out-of-range scalars). Numbers preserve compensated decimal exponents.
+- **`sort`**: Collection sorting helpers.
+  - *Functions*: `ints(Ints) => Ints` and `strings(Strings) => Strings` use hybrid merge sort
+    ($O(n \log n)$) on array copies. `raw_sort_slots` uses callback-driven in-place insertion sort
+    ($O(n^2)$) for small custom collections.
+- **`math`**, **`math/geom`**, **`math/complex`**: Numerical and spatial operations.
+  - *Scalars*: `sin`, `cos`, `tan`, `sqrt`, `atan2`, `floor`, `ceil`, `fabs`, `ldexp`.
+  - *Geometry*: `Vec2`, `Vec3`, `Vec4`, `Rect`, `dot`, `len`, `dist`, `norm`, `lerp`, `angle`, `rotate`, `rect_contains`, `circle_contains`, `rect_union`, `rect_intersect`.
+  - *Complex*: `Complex`, `make`, `real`, `imag`, `add`, `sub`, `mul`, `abs`, `exp`, `fft`, `ifft`.
+- **`event`**: Portable file descriptor readiness multiplexing backed by `poll(2)` (`Poller`, `Event`, `new!`, `add`, `mod`, `del`, `wait`, `close`).
+- **`uring`**: Linux `io_uring` asynchronous I/O submission and completion queues (`new`, `prep_read`, `prep_write`, `submit`, `wait_cqe`, `reap`, `close`).
+- **`color`** & **`color/palette`**: Color spaces (`Rgba`, `LinearRgba`, `Oklab`, `Oklch`, `Hsv`), hex packing (`from_hex`, `to_hex`, `from_hex_str`, `to_hex_str`), alpha blending (`alpha_blend`), perceptual interpolation (`lerp_oklab`), and theme palettes (`palette::Palette`).
+- **`fp`**: Functional combinators over collections (`map`, `filter`, `fold`, `reduce`, `any`, `all`, `count`, `find`, `take`, `drop`, `reverse`, `zip`).
+- **`type`**: Compile-time type predicates and numeric limits (`is_int`, `is_float`, `is_signed`, `is_unsigned`, `bit_width`, `min_val`, `max_val`).
+- **`libc`**: Direct POSIX C system call bindings (`open`, `close`, `read`, `write`, `malloc`).
+- **`mem`**: Memory management utilities and arena allocators.
+- **`os`** & **`sys`**: Operating system environment, command-line arguments (`sys::argv`), and exits.
+- **`ccl`**: Configuration file parsing for the CCL format (`ccl::parse`).
 
 ---
 
@@ -241,10 +352,9 @@ read_file = path =>
 - `E2001`–`E2099`: Lexical and syntax parse errors.
 - `E3004`: Undefined identifier or symbol.
 - `E3008`: Negation `!` applied to non-Flag type (use `+b` for freeze, `!!` for unwrap).
-- `E3027`: Equality comparison on unsupported non-enum ramifications.
 - `E3033`: Reassignment to an unprimed immutable binding.
-- `E3084`: Type unification failure.
-- `E3128`: Parameter types cannot be determined for function used as a value without declared signature.
-- `E3130`–`E3132`: Field initialization tracking errors (access of uninitialized composite field).
+- `E3084`: Type unification failure (including invalid equality on non-enum ramifications).
+- `E3089`: Incompatible ramification shapes in assignment or choice.
+- `E3103`: Cannot infer concrete type for expression without RTTI.
+- `E3130`–`E3132`: Field initialization tracking errors and compile-time evaluation failures.
 - `E5001`–`E5011`: Driver, linker, and target compilation errors.
-- `E5030`–`E5038`: Package system diagnostics (missing/stale import map, unknown package alias, internal module imports, direct dependency violations, cross-package cycles).
