@@ -740,7 +740,7 @@ badge <span class="tok-op">=</span> <span class="tok-str">'⚡'</span></code></p
   <!-- Edva Webcounter -->
   <script>
     if (navigator.sendBeacon) {
-      navigator.sendBeacon('https://counter.shut.gde.to/hit?ref=' + encodeURIComponent(document.referrer || ''));
+      navigator.sendBeacon('https://counter.shut.gde.to/hit/' + location.hostname + '?ref=' + encodeURIComponent(document.referrer || ''));
     }
   </script>
 </body>
