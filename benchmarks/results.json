@@ -1,0 +1,292 @@
+{
+  "generated_at": "2026-11-21T18:13:11Z",
+  "repo_url": "https://github.com/edva-lang/benchmarks",
+  "config": {
+    "warmup": 2,
+    "runs": 7
+  },
+  "environment": {
+    "host": "sholl",
+    "os": "Linux 6.18.60",
+    "arch": "x86_64",
+    "cpu": "Intel(R) Core(TM) i5-10600KF CPU @ 4.10GHz",
+    "cores": 12,
+    "memory_mib": 15922,
+    "toolchains": {
+      "edva": "edva 1.6.2+d06c996-dirty",
+      "clang": "clang version 21.1.8",
+      "rust": "rustc 1.99.0 (b940084d7 2026-09-28) (built from a source tarball)",
+      "zig": "zig 0.17.0",
+      "go": "go version go1.26.10 linux/amd64"
+    }
+  },
+  "languages": [
+    "edva",
+    "clang",
+    "rust",
+    "zig",
+    "go"
+  ],
+  "workloads": [
+    {
+      "id": "wasm_numeric_kernel",
+      "title": "8-Body 3D Kinematics Kernel",
+      "description": "Unboxed 64-bit integer 8-body 3D kinematics step loop testing tight numeric codegen and register allocation.",
+      "n": 400000,
+      "unit": "steps",
+      "checksum": "kernel=4439989",
+      "results": {
+        "edva": {
+          "compile_ms": 379.09,
+          "binary_bytes": 79864,
+          "min_ms": 75.961,
+          "p50_ms": 76.977,
+          "p95_ms": 84.493,
+          "max_ms": 87.368,
+          "cov_pct": 5.11,
+          "peak_rss_kb": 2076,
+          "throughput_per_s": 5196343.9
+        },
+        "clang": {
+          "compile_ms": 109.35,
+          "binary_bytes": 16008,
+          "min_ms": 75.273,
+          "p50_ms": 75.581,
+          "p95_ms": 77.408,
+          "max_ms": 77.954,
+          "cov_pct": 1.25,
+          "peak_rss_kb": 2112,
+          "throughput_per_s": 5292342.4
+        },
+        "rust": {
+          "compile_ms": 498.36,
+          "binary_bytes": 529944,
+          "min_ms": 227.881,
+          "p50_ms": 230.115,
+          "p95_ms": 236.29,
+          "max_ms": 237.751,
+          "cov_pct": 1.42,
+          "peak_rss_kb": 2060,
+          "throughput_per_s": 1738261.7
+        },
+        "zig": {
+          "compile_ms": 13440.37,
+          "binary_bytes": 4004960,
+          "min_ms": 75.12,
+          "p50_ms": 75.936,
+          "p95_ms": 79.069,
+          "max_ms": 80.004,
+          "cov_pct": 2.11,
+          "peak_rss_kb": 736,
+          "throughput_per_s": 5267575.0
+        },
+        "go": {
+          "compile_ms": 2995.93,
+          "binary_bytes": 2430075,
+          "min_ms": 274.843,
+          "p50_ms": 276.351,
+          "p95_ms": 295.056,
+          "max_ms": 299.657,
+          "cov_pct": 3.19,
+          "peak_rss_kb": 2336,
+          "throughput_per_s": 1447435.6
+        }
+      }
+    },
+    {
+      "id": "server_http_router",
+      "title": "In-Memory HTTP/1.1 Router",
+      "description": "HTTP/1.1 request line, header, and query parsing, route matching (/health, /items/:id, /users/:id, 404), and response serialization.",
+      "n": 40000,
+      "unit": "requests",
+      "checksum": "digest=77124860,200=20000,201=10000,404=10000",
+      "results": {
+        "edva": {
+          "compile_ms": 597.31,
+          "binary_bytes": 89560,
+          "min_ms": 4.768,
+          "p50_ms": 4.84,
+          "p95_ms": 5.544,
+          "max_ms": 5.798,
+          "cov_pct": 7.41,
+          "peak_rss_kb": 2532,
+          "throughput_per_s": 8264578.9
+        },
+        "clang": {
+          "compile_ms": 98.63,
+          "binary_bytes": 16024,
+          "min_ms": 7.576,
+          "p50_ms": 7.621,
+          "p95_ms": 7.82,
+          "max_ms": 7.851,
+          "cov_pct": 1.27,
+          "peak_rss_kb": 2068,
+          "throughput_per_s": 5248691.5
+        },
+        "rust": {
+          "compile_ms": 347.39,
+          "binary_bytes": 530816,
+          "min_ms": 7.744,
+          "p50_ms": 7.805,
+          "p95_ms": 8.451,
+          "max_ms": 8.669,
+          "cov_pct": 4.19,
+          "peak_rss_kb": 2132,
+          "throughput_per_s": 5124893.0
+        },
+        "zig": {
+          "compile_ms": 13704.67,
+          "binary_bytes": 4051448,
+          "min_ms": 4.334,
+          "p50_ms": 4.372,
+          "p95_ms": 4.468,
+          "max_ms": 4.489,
+          "cov_pct": 1.16,
+          "peak_rss_kb": 736,
+          "throughput_per_s": 9149179.0
+        },
+        "go": {
+          "compile_ms": 187.51,
+          "binary_bytes": 2441294,
+          "min_ms": 17.307,
+          "p50_ms": 17.623,
+          "p95_ms": 20.62,
+          "max_ms": 21.612,
+          "cov_pct": 8.41,
+          "peak_rss_kb": 6628,
+          "throughput_per_s": 2269813.5
+        }
+      }
+    },
+    {
+      "id": "cli_log_json",
+      "title": "JSON Log Format & Parse",
+      "description": "Deterministic JSON log record formatting, RFC 8259 parsing, and checksum aggregation.",
+      "n": 20000,
+      "unit": "records",
+      "checksum": "checksum=419027993,ok=16000,err=4000",
+      "results": {
+        "edva": {
+          "compile_ms": 682.35,
+          "binary_bytes": 93760,
+          "min_ms": 2.485,
+          "p50_ms": 2.53,
+          "p95_ms": 2.623,
+          "max_ms": 2.636,
+          "cov_pct": 2.17,
+          "peak_rss_kb": 2556,
+          "throughput_per_s": 7903966.8
+        },
+        "clang": {
+          "compile_ms": 115.41,
+          "binary_bytes": 15976,
+          "min_ms": 3.058,
+          "p50_ms": 3.143,
+          "p95_ms": 3.206,
+          "max_ms": 3.214,
+          "cov_pct": 1.64,
+          "peak_rss_kb": 2068,
+          "throughput_per_s": 6363379.5
+        },
+        "rust": {
+          "compile_ms": 269.95,
+          "binary_bytes": 530616,
+          "min_ms": 3.032,
+          "p50_ms": 3.079,
+          "p95_ms": 3.182,
+          "max_ms": 3.185,
+          "cov_pct": 2.17,
+          "peak_rss_kb": 2044,
+          "throughput_per_s": 6494579.8
+        },
+        "zig": {
+          "compile_ms": 14409.57,
+          "binary_bytes": 4221440,
+          "min_ms": 5.813,
+          "p50_ms": 5.902,
+          "p95_ms": 7.007,
+          "max_ms": 7.418,
+          "cov_pct": 9.44,
+          "peak_rss_kb": 784,
+          "throughput_per_s": 3388638.2
+        },
+        "go": {
+          "compile_ms": 423.56,
+          "binary_bytes": 2953016,
+          "min_ms": 26.176,
+          "p50_ms": 26.321,
+          "p95_ms": 27.382,
+          "max_ms": 27.415,
+          "cov_pct": 2.0,
+          "peak_rss_kb": 7552,
+          "throughput_per_s": 759845.3
+        }
+      }
+    },
+    {
+      "id": "collections_closures_generics",
+      "title": "Collections, Closures & Generics",
+      "description": "Batched filter-map, map, higher-order composition, and seeded fold pipelines over structured records.",
+      "n": 16000,
+      "unit": "items",
+      "checksum": "pipeline=490586550,kept=11000,heavy=8031",
+      "results": {
+        "edva": {
+          "compile_ms": 524.73,
+          "binary_bytes": 84880,
+          "min_ms": 0.697,
+          "p50_ms": 0.721,
+          "p95_ms": 0.753,
+          "max_ms": 0.759,
+          "cov_pct": 2.99,
+          "peak_rss_kb": 2072,
+          "throughput_per_s": 22199498.6
+        },
+        "clang": {
+          "compile_ms": 102.98,
+          "binary_bytes": 16088,
+          "min_ms": 0.553,
+          "p50_ms": 0.606,
+          "p95_ms": 0.647,
+          "max_ms": 0.661,
+          "cov_pct": 5.61,
+          "peak_rss_kb": 2068,
+          "throughput_per_s": 26390403.1
+        },
+        "rust": {
+          "compile_ms": 281.61,
+          "binary_bytes": 530512,
+          "min_ms": 0.698,
+          "p50_ms": 0.71,
+          "p95_ms": 0.775,
+          "max_ms": 0.788,
+          "cov_pct": 4.48,
+          "peak_rss_kb": 2188,
+          "throughput_per_s": 22534354.3
+        },
+        "zig": {
+          "compile_ms": 14079.78,
+          "binary_bytes": 4097248,
+          "min_ms": 0.538,
+          "p50_ms": 0.582,
+          "p95_ms": 0.587,
+          "max_ms": 0.589,
+          "cov_pct": 3.56,
+          "peak_rss_kb": 800,
+          "throughput_per_s": 27469131.6
+        },
+        "go": {
+          "compile_ms": 125.25,
+          "binary_bytes": 2430957,
+          "min_ms": 1.011,
+          "p50_ms": 1.063,
+          "p95_ms": 1.123,
+          "max_ms": 1.138,
+          "cov_pct": 3.77,
+          "peak_rss_kb": 2336,
+          "throughput_per_s": 15055097.0
+        }
+      }
+    }
+  ]
+}
