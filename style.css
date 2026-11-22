@@ -247,8 +247,16 @@ main {
    color: var(--text-muted);
    font-weight: 400;
    max-width: 680px;
-   margin: 0 auto 2rem auto;
+   margin: 0 auto 0.75rem auto;
    line-height: 1.5;
+}
+
+.targets-line {
+   font-size: 0.9rem;
+   color: var(--text-muted);
+   opacity: 0.85;
+   letter-spacing: 0.02em;
+   margin: 0 auto 2rem auto;
 }
 
 .nav-links {

@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>edva — a zero-keyword, expression-oriented systems language</title>
+  <title>edva — a zero-bare-keyword, expression-oriented systems language</title>
   
-  <meta name="description" content="A zero-keyword, expression-oriented systems language generating native machine code via LLVM.">
+  <meta name="description" content="A zero-bare-keyword, expression-oriented systems language targeting Linux, Apple Silicon (macOS), and WebAssembly via LLVM.">
   <link rel="canonical" href="https://edva-lang.github.io/">
   <meta name="theme-color" content="#161626">
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://edva-lang.github.io/">
-  <meta property="og:title" content="edva — a zero-keyword, expression-oriented systems language">
-  <meta property="og:description" content="A zero-keyword, expression-oriented systems language generating native machine code via LLVM.">
+  <meta property="og:title" content="edva — a zero-bare-keyword, expression-oriented systems language">
+  <meta property="og:description" content="A zero-bare-keyword, expression-oriented systems language targeting Linux, Apple Silicon (macOS), and WebAssembly via LLVM.">
   <meta property="og:image" content="https://edva-lang.github.io/og-card.png">
   <meta property="og:image:secure_url" content="https://edva-lang.github.io/og-card.png">
   <meta property="og:image:width" content="1200">
@@ -28,8 +28,8 @@
   <meta name="twitter:domain" content="edva-lang.github.io">
   <meta name="twitter:url" content="https://edva-lang.github.io/">
   <meta name="twitter:creator" content="@baldgeorge">
-  <meta name="twitter:title" content="edva — a zero-keyword, expression-oriented systems language">
-  <meta name="twitter:description" content="A zero-keyword, expression-oriented systems language generating native machine code via LLVM.">
+  <meta name="twitter:title" content="edva — a zero-bare-keyword, expression-oriented systems language">
+  <meta name="twitter:description" content="A zero-bare-keyword, expression-oriented systems language targeting Linux, Apple Silicon (macOS), and WebAssembly via LLVM.">
   <meta name="twitter:image" content="https://edva-lang.github.io/og-card.png">
   <meta name="twitter:image:alt" content="edva programming language banner featuring lynx mascot and language highlights">
   
@@ -50,7 +50,7 @@
         "@id": "https://edva-lang.github.io/#website",
         "url": "https://edva-lang.github.io/",
         "name": "edva",
-        "description": "A zero-keyword, expression-oriented systems language generating native machine code via LLVM.",
+        "description": "A zero-bare-keyword, expression-oriented systems language targeting Linux, Apple Silicon (macOS), and WebAssembly via LLVM.",
         "inLanguage": "en-US"
       },
       {
@@ -58,10 +58,10 @@
         "@id": "https://edva-lang.github.io/#software",
         "name": "edva",
         "applicationCategory": "DeveloperApplication",
-        "operatingSystem": "Linux, macOS, Windows",
+        "operatingSystem": "Linux, macOS, WebAssembly",
         "url": "https://edva-lang.github.io/",
         "image": "https://edva-lang.github.io/og-image.png",
-        "description": "A zero-keyword, expression-oriented systems language generating native machine code via LLVM.",
+        "description": "A zero-bare-keyword, expression-oriented systems language targeting Linux, Apple Silicon (macOS), and WebAssembly via LLVM.",
         "offers": {
           "@type": "Offer",
           "price": "0",
@@ -96,7 +96,8 @@
       </div>
       <h1 class="brand-title">edva</h1>
       <p class="brand-sub">an implementation of dva</p>
-      <p class="tagline">A zero-keyword, expression-oriented systems language.</p>
+      <p class="tagline">A zero-bare-keyword, expression-oriented systems language.</p>
+      <p class="targets-line">Tested targets: Linux &middot; Apple Silicon (macOS) &middot; WebAssembly (WASM)</p>
 
       <div class="nav-links">
         <a href="/edva/" class="btn btn-primary">Read Documentation &rarr;</a>
@@ -126,7 +127,7 @@
           <div class="content-grid">
             <div class="feature-info">
               <h3>Symbolic Control Flow</h3>
-              <p>Edva has <strong>zero keywords</strong>. Conditional branches, pattern matching, and cycles are unified into expressions.</p>
+              <p>Edva has <strong>zero bare keywords</strong> — words like <code>if</code>, <code>for</code>, and <code>return</code> are ordinary identifiers, while meta-level directives live in the <code>#</code>-prefixed namespace (<code>#use</code>, <code>#type</code>, <code>#foreign</code>).</p>
               <ul>
                 <li><code>|</code> introduces choices and fallback branches</li>
                 <li><code>[guard]</code> supports value, predicate (e.g. <code>[!&lt; 90]</code>), or variant guards</li>
@@ -406,13 +407,14 @@ total<span class="tok-op">'</span> <span class="tok-op">=</span> <span class="to
               <ul>
                 <li><code>libc::open</code> opens native POSIX file descriptors</li>
                 <li><code>b = {4096}</code> allocates an in-place Builder buffer</li>
-                <li><code>&amp;b</code> passes the writable buffer pointer directly</li>
-                <li><code>?b = n</code> updates length; <code>+b</code> freezes without copying</li>
+                <li><code>mem::write_tail</code> reserves tail space and bounds-checks the written count</li>
+                <li><code>+b</code> freezes into a <code>String</code> without copying</li>
               </ul>
             </div>
             <div class="code-wrapper">
               <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
               <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">libc</span>
+<span class="tok-dir">#use</span> <span class="tok-typ">mem</span>
 
 <span class="tok-com">// Zero-copy file read using Builder buffer</span>
 <span class="tok-fn">read_file</span>: <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;</span> <span class="tok-typ">String</span> <span class="tok-op">|</span> <span class="tok-op">&gt;</span>
@@ -421,9 +423,9 @@ total<span class="tok-op">'</span> <span class="tok-op">=</span> <span class="to
    fd <span class="tok-op">[</span><span class="tok-op">&lt;</span> <span class="tok-num">0</span><span class="tok-op">]</span> <span class="tok-op">&lt;--&gt;</span>
    <span class="tok-op">|</span>
       b <span class="tok-op">=</span> {<span class="tok-num">4096</span>}
-      n <span class="tok-op">=</span> <span class="tok-fn">libc::read</span>(fd, <span class="tok-op">&amp;</span>b, <span class="tok-num">4096</span>)
+      n <span class="tok-op">=</span> <span class="tok-fn">mem::write_tail</span>(b, <span class="tok-num">4096</span>, (dst, avail <span class="tok-op">=&gt;</span> <span class="tok-fn">libc::read</span>(fd, dst, avail)))
       <span class="tok-fn">libc::close</span>(fd)
-      n <span class="tok-op">&gt;</span> <span class="tok-num">0</span> <span class="tok-op">|</span> (<span class="tok-op">?</span>b <span class="tok-op">=</span> n; <span class="tok-op">&lt;+</span> <span class="tok-op">+</span>b <span class="tok-op">+&gt;</span>) <span class="tok-op">|</span> <span class="tok-op">&lt;--&gt;</span></code></pre>
+      n <span class="tok-op">&gt;</span> <span class="tok-num">0</span> <span class="tok-op">|</span> <span class="tok-op">&lt;+</span> <span class="tok-op">+</span>b <span class="tok-op">+&gt;</span> <span class="tok-op">|</span> <span class="tok-op">&lt;--&gt;</span></code></pre>
             </div>
           </div>
         </div>
@@ -637,7 +639,7 @@ is_term <span class="tok-op">|</span> <span class="tok-fn">puts</span>(<span cla
               <h3>Compile-Time &amp; Here-Docs</h3>
               <p>First-class compile-time evaluation, Unicode runes, repetition, and multiline here-documents.</p>
               <ul>
-                <li><code>#!</code> evaluates expressions at compile time and folds static constants</li>
+                <li><code>#const</code> evaluates expressions at compile time and folds static constants</li>
                 <li><code>"""..."""</code> here-docs with baseline margin stripping and <code>${expr}</code> interpolation</li>
                 <li>Unescaped <code>"</code> and <code>""</code> work as-is; direct in-place lowering into Builders</li>
                 <li><code>expr {N}</code> repetition constructs flat, register-allocated records</li>
@@ -645,9 +647,9 @@ is_term <span class="tok-op">|</span> <span class="tok-fn">puts</span>(<span cla
             </div>
             <div class="code-wrapper">
               <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
-              <pre><code><span class="tok-com">// Compile-time constant folding with #!</span>
-<span class="tok-dir">#!</span> <span class="tok-dir">#type</span> <span class="tok-typ">Version</span> (major: <span class="tok-typ">Int</span>, minor: <span class="tok-typ">Int</span>, patch: <span class="tok-typ">Int</span>)
-<span class="tok-dir">#!</span> <span class="tok-fn">build_ver</span> <span class="tok-op">=</span> <span class="tok-typ">Version</span>(<span class="tok-num">1</span>, <span class="tok-num">4</span>, <span class="tok-num">0</span>)
+              <pre><code><span class="tok-com">// Compile-time constant folding with #const</span>
+<span class="tok-dir">#type</span> <span class="tok-typ">Version</span> (major: <span class="tok-typ">Int</span>, minor: <span class="tok-typ">Int</span>, patch: <span class="tok-typ">Int</span>)
+<span class="tok-fn">build_ver</span> <span class="tok-op">=</span> <span class="tok-dir">#const</span> <span class="tok-typ">Version</span>(<span class="tok-num">1</span>, <span class="tok-num">6</span>, <span class="tok-num">2</span>)
 
 <span class="tok-com">// Triple-quoted here-doc with margin stripping &amp; interpolation</span>
 user <span class="tok-op">=</span> <span class="tok-str">"Alice"</span>
@@ -658,9 +660,9 @@ report <span class="tok-op">=</span> <span class="tok-str">"""
    Note: unescaped "quotes" and ""double quotes"" work as-is.
    """</span>
 
-<span class="tok-com">// Repetition literal (0 {8}) and 64-bit Unicode Rune</span>
+<span class="tok-com">// Repetition literal (0 {8}) and 32-bit Unicode Rune</span>
 zero_block <span class="tok-op">=</span> <span class="tok-num">0</span> {<span class="tok-num">8</span>}
-badge <span class="tok-op">=</span> <span class="tok-str">'⚡'</span></code></pre>
+badge <span class="tok-op">=</span> <span class="tok-str">'⚡</span></code></pre>
             </div>
           </div>
         </div>

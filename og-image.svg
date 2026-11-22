@@ -55,7 +55,7 @@
 
     <!-- Tagline -->
     <text x="4" y="258" font-family="Roboto Mono" font-size="29" font-weight="500" fill="#eff4f8">
-      <tspan x="4" dy="0">A zero-keyword,</tspan>
+      <tspan x="4" dy="0">A zero-bare-keyword,</tspan>
       <tspan x="4" dy="42">expression-oriented</tspan>
       <tspan x="4" dy="42" fill="#83c9f4">systems language.</tspan>
     </text>
@@ -67,20 +67,20 @@
         <rect width="136" height="36" rx="8" fill="#202036" stroke="#77f2c1" stroke-opacity="0.35" stroke-width="1"/>
         <text x="68" y="23" text-anchor="middle" font-family="Roboto Mono" font-size="13" font-weight="500" fill="#77f2c1">LLVM Codegen</text>
       </g>
-      <!-- Pill 2: Zero Keywords -->
+      <!-- Pill 2: Zero Bare Keywords -->
       <g transform="translate(148, 0)">
-        <rect width="144" height="36" rx="8" fill="#202036" stroke="#83c9f4" stroke-opacity="0.35" stroke-width="1"/>
-        <text x="72" y="23" text-anchor="middle" font-family="Roboto Mono" font-size="13" font-weight="500" fill="#83c9f4">Zero Keywords</text>
+        <rect width="176" height="36" rx="8" fill="#202036" stroke="#83c9f4" stroke-opacity="0.35" stroke-width="1"/>
+        <text x="88" y="23" text-anchor="middle" font-family="Roboto Mono" font-size="13" font-weight="500" fill="#83c9f4">Zero Bare Keywords</text>
       </g>
-      <!-- Pill 3: Pipelines |> -->
-      <g transform="translate(304, 0)">
+      <!-- Pill 3: Pipelines $> -->
+      <g transform="translate(336, 0)">
         <rect width="134" height="36" rx="8" fill="#202036" stroke="#77f2c1" stroke-opacity="0.35" stroke-width="1"/>
-        <text x="67" y="23" text-anchor="middle" font-family="Roboto Mono" font-size="13" font-weight="500" fill="#77f2c1">Pipelines |&gt;</text>
+        <text x="67" y="23" text-anchor="middle" font-family="Roboto Mono" font-size="13" font-weight="500" fill="#77f2c1">Pipelines $&gt;</text>
       </g>
-      <!-- Pill 4: Foreign C ABI -->
-      <g transform="translate(450, 0)">
-        <rect width="146" height="36" rx="8" fill="#202036" stroke="#83c9f4" stroke-opacity="0.35" stroke-width="1"/>
-        <text x="73" y="23" text-anchor="middle" font-family="Roboto Mono" font-size="13" font-weight="500" fill="#83c9f4">Foreign C ABI</text>
+      <!-- Pill 4: Linux · macOS · WASM -->
+      <g transform="translate(482, 0)">
+        <rect width="194" height="36" rx="8" fill="#202036" stroke="#83c9f4" stroke-opacity="0.35" stroke-width="1"/>
+        <text x="97" y="23" text-anchor="middle" font-family="Roboto Mono" font-size="13" font-weight="500" fill="#83c9f4">Linux · macOS · WASM</text>
       </g>
     </g>
   </g>
