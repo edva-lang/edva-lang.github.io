@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-22T01:25:41Z",
+  "generated_at": "2026-11-22T18:27:36Z",
   "repo_url": "https://github.com/edva-lang/benchmarks",
   "config": {
     "warmup": 2,
@@ -13,7 +13,7 @@
     "cores": 12,
     "memory_mib": 15922,
     "toolchains": {
-      "edva": "edva 1.6.3+ade0ce7",
+      "edva": "edva 1.6.3+9200f34-dirty",
       "clang": "clang version 21.1.8",
       "rust": "rustc 1.99.0 (b940084d7 2026-09-28) (built from a source tarball)",
       "zig": "zig 0.17.0",
@@ -37,59 +37,59 @@
       "checksum": "kernel=4439989",
       "results": {
         "edva": {
-          "compile_ms": 365.4,
-          "binary_bytes": 80208,
-          "min_ms": 72.896,
-          "p50_ms": 73.164,
-          "p95_ms": 73.807,
-          "max_ms": 73.947,
-          "cov_pct": 0.47,
-          "peak_rss_kb": 2012,
-          "throughput_per_s": 5467137.1
+          "compile_ms": 350.12,
+          "binary_bytes": 26552,
+          "min_ms": 72.613,
+          "p50_ms": 73.246,
+          "p95_ms": 73.98,
+          "max_ms": 74.18,
+          "cov_pct": 0.6,
+          "peak_rss_kb": 1952,
+          "throughput_per_s": 5461021.2
         },
         "clang": {
-          "compile_ms": 95.87,
+          "compile_ms": 97.0,
           "binary_bytes": 16008,
-          "min_ms": 72.44,
-          "p50_ms": 72.732,
-          "p95_ms": 73.478,
-          "max_ms": 73.541,
-          "cov_pct": 0.55,
-          "peak_rss_kb": 2116,
-          "throughput_per_s": 5499625.7
+          "min_ms": 72.259,
+          "p50_ms": 73.125,
+          "p95_ms": 79.479,
+          "max_ms": 82.318,
+          "cov_pct": 4.25,
+          "peak_rss_kb": 2096,
+          "throughput_per_s": 5470111.7
         },
         "rust": {
-          "compile_ms": 214.59,
+          "compile_ms": 491.77,
           "binary_bytes": 529944,
-          "min_ms": 217.848,
-          "p50_ms": 219.052,
-          "p95_ms": 221.747,
-          "max_ms": 222.933,
-          "cov_pct": 0.68,
-          "peak_rss_kb": 2060,
-          "throughput_per_s": 1826051.2
+          "min_ms": 218.186,
+          "p50_ms": 220.048,
+          "p95_ms": 231.904,
+          "max_ms": 234.596,
+          "cov_pct": 2.41,
+          "peak_rss_kb": 2160,
+          "throughput_per_s": 1817783.6
         },
         "zig": {
-          "compile_ms": 2192.09,
+          "compile_ms": 2299.23,
           "binary_bytes": 189776,
-          "min_ms": 72.431,
-          "p50_ms": 73.052,
-          "p95_ms": 82.569,
-          "max_ms": 87.966,
-          "cov_pct": 6.67,
+          "min_ms": 71.839,
+          "p50_ms": 72.67,
+          "p95_ms": 73.581,
+          "max_ms": 73.841,
+          "cov_pct": 0.81,
           "peak_rss_kb": 1828,
-          "throughput_per_s": 5475552.9
+          "throughput_per_s": 5504355.1
         },
         "go": {
-          "compile_ms": 103.9,
+          "compile_ms": 176.24,
           "binary_bytes": 2430075,
-          "min_ms": 263.523,
-          "p50_ms": 267.475,
-          "p95_ms": 275.592,
-          "max_ms": 277.952,
-          "cov_pct": 1.78,
+          "min_ms": 263.882,
+          "p50_ms": 264.719,
+          "p95_ms": 265.664,
+          "max_ms": 265.887,
+          "cov_pct": 0.21,
           "peak_rss_kb": 2336,
-          "throughput_per_s": 1495468.9
+          "throughput_per_s": 1511033.7
         }
       }
     },
@@ -102,59 +102,59 @@
       "checksum": "digest=905190980,200=100000,201=50000,404=50000",
       "results": {
         "edva": {
-          "compile_ms": 547.53,
-          "binary_bytes": 89696,
-          "min_ms": 18.652,
-          "p50_ms": 18.785,
-          "p95_ms": 18.894,
-          "max_ms": 18.901,
-          "cov_pct": 0.43,
-          "peak_rss_kb": 4972,
-          "throughput_per_s": 10646853.9
+          "compile_ms": 511.49,
+          "binary_bytes": 36352,
+          "min_ms": 20.227,
+          "p50_ms": 20.368,
+          "p95_ms": 20.603,
+          "max_ms": 20.611,
+          "cov_pct": 0.67,
+          "peak_rss_kb": 4920,
+          "throughput_per_s": 9819280.1
         },
         "clang": {
-          "compile_ms": 94.94,
+          "compile_ms": 95.84,
           "binary_bytes": 16024,
-          "min_ms": 34.55,
-          "p50_ms": 35.668,
-          "p95_ms": 36.504,
-          "max_ms": 36.629,
-          "cov_pct": 1.95,
+          "min_ms": 35.293,
+          "p50_ms": 36.014,
+          "p95_ms": 36.825,
+          "max_ms": 36.937,
+          "cov_pct": 1.58,
           "peak_rss_kb": 2068,
-          "throughput_per_s": 5607216.2
+          "throughput_per_s": 5553323.9
         },
         "rust": {
-          "compile_ms": 307.81,
+          "compile_ms": 316.01,
           "binary_bytes": 530816,
-          "min_ms": 35.199,
-          "p50_ms": 35.736,
-          "p95_ms": 36.343,
-          "max_ms": 36.429,
-          "cov_pct": 1.08,
-          "peak_rss_kb": 2260,
-          "throughput_per_s": 5596521.9
+          "min_ms": 34.733,
+          "p50_ms": 35.54,
+          "p95_ms": 36.025,
+          "max_ms": 36.044,
+          "cov_pct": 1.4,
+          "peak_rss_kb": 2196,
+          "throughput_per_s": 5627470.7
         },
         "zig": {
-          "compile_ms": 2316.78,
+          "compile_ms": 2379.04,
           "binary_bytes": 195824,
-          "min_ms": 18.161,
-          "p50_ms": 18.302,
-          "p95_ms": 18.336,
-          "max_ms": 18.349,
-          "cov_pct": 0.36,
+          "min_ms": 17.939,
+          "p50_ms": 18.252,
+          "p95_ms": 19.348,
+          "max_ms": 19.962,
+          "cov_pct": 3.24,
           "peak_rss_kb": 1836,
-          "throughput_per_s": 10927717.3
+          "throughput_per_s": 10957652.8
         },
         "go": {
-          "compile_ms": 98.7,
+          "compile_ms": 101.65,
           "binary_bytes": 2441294,
-          "min_ms": 77.003,
-          "p50_ms": 79.964,
-          "p95_ms": 89.823,
-          "max_ms": 90.702,
-          "cov_pct": 5.77,
-          "peak_rss_kb": 7976,
-          "throughput_per_s": 2501138.0
+          "min_ms": 76.978,
+          "p50_ms": 80.55,
+          "p95_ms": 86.592,
+          "max_ms": 87.316,
+          "cov_pct": 4.7,
+          "peak_rss_kb": 8104,
+          "throughput_per_s": 2482925.5
         }
       }
     },
@@ -167,59 +167,59 @@
       "checksum": "checksum=95139755,ok=80000,err=20000",
       "results": {
         "edva": {
-          "compile_ms": 636.49,
-          "binary_bytes": 93984,
-          "min_ms": 10.893,
-          "p50_ms": 11.079,
-          "p95_ms": 11.257,
-          "max_ms": 11.298,
-          "cov_pct": 1.12,
-          "peak_rss_kb": 5136,
-          "throughput_per_s": 9026434.1
+          "compile_ms": 614.55,
+          "binary_bytes": 36576,
+          "min_ms": 10.949,
+          "p50_ms": 11.3,
+          "p95_ms": 14.222,
+          "max_ms": 14.553,
+          "cov_pct": 11.85,
+          "peak_rss_kb": 4920,
+          "throughput_per_s": 8849664.8
         },
         "clang": {
-          "compile_ms": 107.6,
+          "compile_ms": 108.75,
           "binary_bytes": 15976,
-          "min_ms": 13.675,
-          "p50_ms": 14.332,
-          "p95_ms": 15.966,
-          "max_ms": 16.116,
-          "cov_pct": 6.34,
-          "peak_rss_kb": 2116,
-          "throughput_per_s": 6977561.7
+          "min_ms": 13.67,
+          "p50_ms": 14.334,
+          "p95_ms": 15.341,
+          "max_ms": 15.716,
+          "cov_pct": 4.54,
+          "peak_rss_kb": 2100,
+          "throughput_per_s": 6976209.5
         },
         "rust": {
-          "compile_ms": 241.7,
+          "compile_ms": 240.63,
           "binary_bytes": 530616,
-          "min_ms": 13.318,
-          "p50_ms": 13.355,
-          "p95_ms": 13.658,
-          "max_ms": 13.66,
-          "cov_pct": 1.08,
-          "peak_rss_kb": 2060,
-          "throughput_per_s": 7487587.8
+          "min_ms": 13.352,
+          "p50_ms": 14.341,
+          "p95_ms": 16.674,
+          "max_ms": 18.091,
+          "cov_pct": 10.14,
+          "peak_rss_kb": 2064,
+          "throughput_per_s": 6973066.9
         },
         "zig": {
-          "compile_ms": 2863.87,
+          "compile_ms": 2896.36,
           "binary_bytes": 236704,
-          "min_ms": 29.309,
-          "p50_ms": 29.38,
-          "p95_ms": 30.01,
-          "max_ms": 30.039,
-          "cov_pct": 1.01,
+          "min_ms": 29.369,
+          "p50_ms": 29.456,
+          "p95_ms": 30.272,
+          "max_ms": 30.291,
+          "cov_pct": 1.24,
           "peak_rss_kb": 1824,
-          "throughput_per_s": 3403706.8
+          "throughput_per_s": 3394950.0
         },
         "go": {
-          "compile_ms": 111.95,
+          "compile_ms": 115.97,
           "binary_bytes": 2953016,
-          "min_ms": 121.786,
-          "p50_ms": 124.803,
-          "p95_ms": 139.439,
-          "max_ms": 146.89,
-          "cov_pct": 6.19,
-          "peak_rss_kb": 8464,
-          "throughput_per_s": 801264.8
+          "min_ms": 118.467,
+          "p50_ms": 121.733,
+          "p95_ms": 132.679,
+          "max_ms": 133.631,
+          "cov_pct": 4.31,
+          "peak_rss_kb": 8320,
+          "throughput_per_s": 821472.2
         }
       }
     },
@@ -232,59 +232,59 @@
       "checksum": "pipeline=857016143,kept=550000,heavy=401593",
       "results": {
         "edva": {
-          "compile_ms": 498.71,
-          "binary_bytes": 89312,
-          "min_ms": 11.528,
-          "p50_ms": 11.964,
-          "p95_ms": 12.114,
-          "max_ms": 12.151,
-          "cov_pct": 1.88,
-          "peak_rss_kb": 3564,
-          "throughput_per_s": 66866659.3
+          "compile_ms": 488.76,
+          "binary_bytes": 35952,
+          "min_ms": 11.503,
+          "p50_ms": 11.628,
+          "p95_ms": 12.027,
+          "max_ms": 12.1,
+          "cov_pct": 1.83,
+          "peak_rss_kb": 3384,
+          "throughput_per_s": 68798721.9
         },
         "clang": {
-          "compile_ms": 96.68,
+          "compile_ms": 96.46,
           "binary_bytes": 16088,
-          "min_ms": 8.973,
-          "p50_ms": 8.995,
-          "p95_ms": 9.011,
-          "max_ms": 9.013,
-          "cov_pct": 0.14,
+          "min_ms": 8.941,
+          "p50_ms": 8.996,
+          "p95_ms": 9.053,
+          "max_ms": 9.054,
+          "cov_pct": 0.45,
           "peak_rss_kb": 2068,
-          "throughput_per_s": 88937804.7
+          "throughput_per_s": 88924626.7
         },
         "rust": {
-          "compile_ms": 251.91,
+          "compile_ms": 259.25,
           "binary_bytes": 530512,
-          "min_ms": 11.518,
-          "p50_ms": 11.563,
-          "p95_ms": 11.778,
-          "max_ms": 11.796,
-          "cov_pct": 0.85,
-          "peak_rss_kb": 2192,
-          "throughput_per_s": 69187800.9
+          "min_ms": 11.552,
+          "p50_ms": 11.634,
+          "p95_ms": 12.437,
+          "max_ms": 12.454,
+          "cov_pct": 3.32,
+          "peak_rss_kb": 2188,
+          "throughput_per_s": 68765989.2
         },
         "zig": {
-          "compile_ms": 2490.66,
+          "compile_ms": 2508.09,
           "binary_bytes": 199584,
-          "min_ms": 8.866,
-          "p50_ms": 8.918,
-          "p95_ms": 9.071,
-          "max_ms": 9.093,
-          "cov_pct": 0.84,
+          "min_ms": 8.852,
+          "p50_ms": 8.907,
+          "p95_ms": 9.102,
+          "max_ms": 9.195,
+          "cov_pct": 1.17,
           "peak_rss_kb": 1840,
-          "throughput_per_s": 89704210.5
+          "throughput_per_s": 89818692.0
         },
         "go": {
-          "compile_ms": 99.18,
+          "compile_ms": 98.96,
           "binary_bytes": 2430957,
-          "min_ms": 14.616,
-          "p50_ms": 14.786,
-          "p95_ms": 15.088,
-          "max_ms": 15.108,
-          "cov_pct": 1.24,
-          "peak_rss_kb": 6560,
-          "throughput_per_s": 54106815.5
+          "min_ms": 14.589,
+          "p50_ms": 14.753,
+          "p95_ms": 14.953,
+          "max_ms": 15.026,
+          "cov_pct": 0.81,
+          "peak_rss_kb": 6432,
+          "throughput_per_s": 54226909.7
         }
       }
     }
