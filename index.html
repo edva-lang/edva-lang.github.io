@@ -197,10 +197,10 @@
               <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">fs</span>
 <span class="tok-dir">#use</span> <span class="tok-typ">json</span>
 
-<span class="tok-com">// Monadic bind ($>>) &amp; functor map ($+>)</span>
-<span class="tok-fn">find_user</span>: <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;</span> <span class="tok-typ">String</span> <span class="tok-op">|</span> <span class="tok-typ">Error</span> <span class="tok-op">&gt;</span>
+<span class="tok-com">// Monadic bind ($>>) chains optional lookups</span>
+<span class="tok-fn">find_user</span>: <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;</span> <span class="tok-typ">User</span> <span class="tok-op">|</span> <span class="tok-op">&gt;</span>
 <span class="tok-fn">find_user</span> <span class="tok-op">=</span> <span class="tok-fn">id</span> <span class="tok-op">=&gt;</span>
-   <span class="tok-fn">query_db</span>(id) <span class="tok-op">$&gt;&gt;</span> <span class="tok-fn">validate</span> <span class="tok-op">$+&gt;</span> (<span class="tok-fn">u</span> <span class="tok-op">=&gt;</span> u.name)
+   <span class="tok-fn">query_db</span>(id) <span class="tok-op">$&gt;&gt;</span> <span class="tok-fn">validate</span> <span class="tok-op">$&gt;&gt;</span> (<span class="tok-op">&lt;+</span> <span class="tok-op">_</span> <span class="tok-op">+&gt;</span>)
 
 <span class="tok-com">// Postfix error propagation (--!) unwraps or early-returns</span>
 <span class="tok-fn">load_config</span>: <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;</span> <span class="tok-typ">Config</span> <span class="tok-op">|</span> <span class="tok-typ">Error</span> <span class="tok-op">&gt;</span>
