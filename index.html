@@ -153,25 +153,28 @@
               <p>Edva has <strong>zero bare keywords</strong> — words like <code>if</code>, <code>for</code>, and <code>return</code> are ordinary identifiers, while meta-level directives live in the <code>#</code>-prefixed namespace (<code>#use</code>, <code>#type</code>, <code>#foreign</code>).</p>
               <ul>
                 <li><code>|</code> introduces choices and fallback branches</li>
-                <li><code>[guard]</code> supports value, predicate (e.g. <code>[!&lt; 90]</code>), or variant guards</li>
+                <li><code>[guard]</code> supports value, range (<code>[90..100]</code>), predicate, or variant guards</li>
                 <li><code>@</code> iterates over ranges, arrays, or streams</li>
                 <li><code>--&gt;</code> and <code>--^</code> provide symbolic break and continue</li>
               </ul>
             </div>
             <div class="code-wrapper">
               <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
-              <pre><code><span class="tok-com">// Conditionals & multi-guard pattern matching</span>
+              <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">io</span>
+
+<span class="tok-com">// Conditionals &amp; multi-guard pattern matching</span>
+<span class="tok-fn">classify</span>: <span class="tok-typ">Int</span> <span class="tok-op">=&gt;</span> <span class="tok-typ">String</span>
 <span class="tok-fn">classify</span> <span class="tok-op">=</span> <span class="tok-fn">score</span> <span class="tok-op">=&gt;</span>
-   score <span class="tok-op">[</span><span class="tok-num">100</span><span class="tok-op">]</span>       <span class="tok-str">"perfect"</span>
-         <span class="tok-op">[</span><span class="tok-op">!&lt;</span> <span class="tok-num">90</span><span class="tok-op">]</span>     <span class="tok-str">"distinction"</span>
-         <span class="tok-op">[</span><span class="tok-op">!&lt;</span> <span class="tok-num">50</span><span class="tok-op">]</span>     <span class="tok-str">"pass"</span>
-         <span class="tok-op">|</span>           <span class="tok-str">"fail"</span>
+   score
+      <span class="tok-op">[</span><span class="tok-num">100</span><span class="tok-op">]</span>     <span class="tok-str">"perfect"</span>
+      <span class="tok-op">[</span><span class="tok-num">90</span><span class="tok-op">..</span><span class="tok-num">100</span><span class="tok-op">]</span> <span class="tok-str">"distinction"</span>
+      <span class="tok-op">[</span><span class="tok-num">50</span><span class="tok-op">..</span><span class="tok-num">90</span><span class="tok-op">]</span>  <span class="tok-str">"pass"</span>
+      <span class="tok-op">|</span>         <span class="tok-str">"fail"</span>
 
 <span class="tok-com">// Iteration with @ and symbolic cycle control</span>
-count <span class="tok-op">=</span> <span class="tok-num">10</span>
-<span class="tok-num">0</span><span class="tok-op">..</span>count <span class="tok-op">@</span> <span class="tok-fn">i</span> <span class="tok-op">=&gt;</span>
+<span class="tok-num">10</span> <span class="tok-op">@</span> <span class="tok-fn">i</span> <span class="tok-op">=&gt;</span>
    i <span class="tok-op">[</span><span class="tok-num">7</span><span class="tok-op">]</span> <span class="tok-op">--&gt;</span>          <span class="tok-com">// --&gt; breaks the cycle</span>
-   <span class="tok-fn">print</span> <span class="tok-op">$</span> <span class="tok-fn">classify</span>(i <span class="tok-op">*</span> <span class="tok-num">10</span>)</code></pre>
+   <span class="tok-fn">io::out</span> <span class="tok-op">$</span> <span class="tok-fn">classify</span>(i <span class="tok-op">*</span> <span class="tok-num">10</span>)</code></pre>
             </div>
           </div>
         </div>
@@ -181,27 +184,30 @@ count <span class="tok-op">=</span> <span class="tok-num">10</span>
           <div class="content-grid">
             <div class="feature-info">
               <h3>Algebraic Ramifications</h3>
-              <p>Rams represent binary outcomes (presence/absence, success/failure) with unboxed <code>{ i1, i64 }</code> storage.</p>
+              <p>Rams represent binary outcomes (presence/absence, success/failure) with compact unboxed storage.</p>
               <ul>
                 <li>Four shapes: <code>&lt;&gt;</code>, <code>&lt;T|&gt;</code>, <code>&lt;|E&gt;</code>, <code>&lt;T|E&gt;</code></li>
-                <li>Positional matching: first branch is positive, second negative</li>
-                <li>Monadic propagation via <code>$&gt;&gt;</code></li>
-                <li>Inline unwrap and error bubbling via <code>--!</code></li>
+                <li>Monadic bind <code>$&gt;&gt;</code> and positive map <code>$+&gt;</code></li>
+                <li>Postfix error propagation via <code>--!</code></li>
+                <li>Inline default fallback via <code>|_|</code></li>
               </ul>
             </div>
             <div class="code-wrapper">
               <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
-              <pre><code><span class="tok-com">// Monadic bind ($>>) chains fallible operations</span>
-<span class="tok-fn">find_user</span>: <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;</span> <span class="tok-typ">User</span> <span class="tok-op">|</span> <span class="tok-typ">Error</span> <span class="tok-op">&gt;</span>
+              <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">fs</span>
+<span class="tok-dir">#use</span> <span class="tok-typ">json</span>
+
+<span class="tok-com">// Monadic bind ($>>) &amp; functor map ($+>)</span>
+<span class="tok-fn">find_user</span>: <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;</span> <span class="tok-typ">String</span> <span class="tok-op">|</span> <span class="tok-typ">Error</span> <span class="tok-op">&gt;</span>
 <span class="tok-fn">find_user</span> <span class="tok-op">=</span> <span class="tok-fn">id</span> <span class="tok-op">=&gt;</span>
-   <span class="tok-fn">query_db</span>(id) <span class="tok-op">$>></span> <span class="tok-fn">validate</span> <span class="tok-op">$>></span> (<span class="tok-fn">u</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;+</span> u <span class="tok-op">+&gt;</span>)
+   <span class="tok-fn">query_db</span>(id) <span class="tok-op">$&gt;&gt;</span> <span class="tok-fn">validate</span> <span class="tok-op">$+&gt;</span> (<span class="tok-fn">u</span> <span class="tok-op">=&gt;</span> u.name)
 
 <span class="tok-com">// Postfix error propagation (--!) unwraps or early-returns</span>
 <span class="tok-fn">load_config</span>: <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;</span> <span class="tok-typ">Config</span> <span class="tok-op">|</span> <span class="tok-typ">Error</span> <span class="tok-op">&gt;</span>
 <span class="tok-fn">load_config</span> <span class="tok-op">=</span> <span class="tok-fn">path</span> <span class="tok-op">=&gt;</span>
-   raw <span class="tok-op">=</span> <span class="tok-fn">io::read_file</span>(path)<span class="tok-op">--!</span>
+   raw <span class="tok-op">=</span> <span class="tok-fn">fs::read_to_string</span>(path)<span class="tok-op">--!</span>
    cfg <span class="tok-op">=</span> <span class="tok-fn">json::parse</span>(raw)<span class="tok-op">--!</span>
-   <span class="tok-op">&lt;+</span> cfg <span class="tok-op">+&gt;</span></code></pre>
+   <span class="tok-op">&lt;+</span> cfg <span class="tok-op">-&gt;</span></code></pre>
             </div>
           </div>
         </div>
@@ -210,28 +216,28 @@ count <span class="tok-op">=</span> <span class="tok-num">10</span>
         <div class="tab-content" id="tab-builder">
           <div class="content-grid">
             <div class="feature-info">
-              <h3>In-Place Builders & Strings</h3>
+              <h3>In-Place Builders &amp; Strings</h3>
               <p>Strings are immutable fat pointers. Builders provide high-throughput in-place buffering with zero-copy freeze.</p>
               <ul>
                 <li><code>b = {N}</code> allocates an initial buffer with capacity <code>N</code></li>
-                <li><code>b = (s1, s2, ...)</code> streams elements via record notation without string concat</li>
-                <li><code>b = (13, 10)</code> appends raw CRLF byte records directly</li>
-                <li><code>+b</code> freezes the buffer into an immutable String with <strong>zero allocation</strong></li>
+                <li><code>b += "...${expr}..."</code> streams templates directly with zero intermediate allocation</li>
+                <li><code>b += (13, 10)</code> appends raw CRLF byte tuples directly</li>
+                <li><code>+b</code> freezes the buffer into an immutable String with <strong>zero copy</strong></li>
               </ul>
             </div>
             <div class="code-wrapper">
               <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
-              <pre><code><span class="tok-com">// Pure strings & in-place builders</span>
-<span class="tok-fn">build_report</span>: (<span class="tok-typ">String</span>[]) <span class="tok-op">=&gt;</span> <span class="tok-typ">String</span>
+              <pre><code><span class="tok-com">// Pure strings &amp; in-place builders</span>
+<span class="tok-fn">build_report</span>: <span class="tok-typ">String</span>[] <span class="tok-op">=&gt;</span> <span class="tok-typ">String</span>
 <span class="tok-fn">build_report</span> <span class="tok-op">=</span> <span class="tok-fn">items</span> <span class="tok-op">=&gt;</span>
    b <span class="tok-op">=</span> {<span class="tok-num">128</span>}                         <span class="tok-com">// initial capacity hint</span>
-   b <span class="tok-op">=</span> (<span class="tok-str">"# Report Summary"</span>, <span class="tok-str">"\n\n"</span>)  <span class="tok-com">// record streaming</span>
+   b <span class="tok-op">+=</span> <span class="tok-str">"# Report Summary\n\n"</span>
 
    items <span class="tok-op">@</span> <span class="tok-fn">item</span> <span class="tok-op">=&gt;</span>
-      b <span class="tok-op">=</span> (<span class="tok-str">" - "</span>, item, <span class="tok-str">"\n"</span>)        <span class="tok-com">// zero-alloc append</span>
+      b <span class="tok-op">+=</span> <span class="tok-str">" - ${item}\n"</span>            <span class="tok-com">// zero-alloc streaming</span>
 
-   b <span class="tok-op">=</span> (<span class="tok-num">13</span>, <span class="tok-num">10</span>)                      <span class="tok-com">// CRLF byte record</span>
-   <span class="tok-op">+</span>b                                <span class="tok-com">// freeze to String</span></code></pre>
+   b <span class="tok-op">+=</span> (<span class="tok-num">13</span>, <span class="tok-num">10</span>)                     <span class="tok-com">// CRLF byte tuple</span>
+   <span class="tok-op">+</span>b                                <span class="tok-com">// O(1) freeze to String</span></code></pre>
             </div>
           </div>
         </div>
@@ -241,29 +247,27 @@ count <span class="tok-op">=</span> <span class="tok-num">10</span>
           <div class="content-grid">
             <div class="feature-info">
               <h3>Native Networking</h3>
-              <p>A production-ready micro HTTP service built purely on Edva's standard library with zero runtime overhead.</p>
+              <p>Fast HTTP request routing and response formatting built purely on Edva's standard library with zero GC overhead.</p>
               <ul>
-                <li>Native non-blocking sockets and poll integration</li>
-                <li>Raw string literals <code>(= ... =)</code> for inline JSON/templates</li>
-                <li>No tracing garbage collector or thread runtime</li>
+                <li>Triple-quoted <code>"""..."""</code> strings allow unescaped JSON quotes</li>
+                <li>Choice guards dispatch routes cleanly without boilerplate</li>
+                <li>Scoped arenas reset per request with zero heap fragmentation</li>
                 <li>Direct LLVM compilation and native link</li>
               </ul>
             </div>
             <div class="code-wrapper">
               <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
-              <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">net</span>
-<span class="tok-dir">#use</span> <span class="tok-typ">net/http</span>
+              <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">str</span>
 
-<span class="tok-fn">handle_req</span>: <span class="tok-typ">Int</span>, <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> <span class="tok-typ">Int</span>
-<span class="tok-fn">handle_req</span> <span class="tok-op">=</span> <span class="tok-fn">c_fd</span>, <span class="tok-fn">r</span> <span class="tok-op">=&gt;</span>
-   path <span class="tok-op">=</span> <span class="tok-fn">http::path_of</span>(r)
-   path <span class="tok-op">[</span><span class="tok-str">"/"</span><span class="tok-op">]</span>
-      <span class="tok-fn">http::respond</span>(c_fd, <span class="tok-num">200</span>, <span class="tok-str">"text/plain"</span>, <span class="tok-str">"Hello!"</span>)
-   <span class="tok-op">[</span><span class="tok-str">"/health"</span><span class="tok-op">]</span>
-      body <span class="tok-op">=</span> <span class="tok-str">(={"status": "ok"}=)</span>
-      <span class="tok-fn">http::respond</span>(c_fd, <span class="tok-num">200</span>, <span class="tok-str">"application/json"</span>, body)
-   <span class="tok-op">|</span>
-      <span class="tok-fn">http::respond</span>(c_fd, <span class="tok-num">404</span>, <span class="tok-str">"text/plain"</span>, <span class="tok-str">"Not Found"</span>)</code></pre>
+<span class="tok-fn">route</span>: <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> (<span class="tok-typ">Int</span>, <span class="tok-typ">String</span>, <span class="tok-typ">String</span>)
+<span class="tok-fn">route</span> <span class="tok-op">=</span> <span class="tok-fn">path</span> <span class="tok-op">=&gt;</span>
+   path
+      <span class="tok-op">[</span><span class="tok-str">"/"</span><span class="tok-op">]</span>
+         (<span class="tok-num">200</span>, <span class="tok-str">"text/plain"</span>, <span class="tok-str">"Hello, Edva!"</span>)
+      <span class="tok-op">[</span><span class="tok-str">"/health"</span><span class="tok-op">]</span>
+         (<span class="tok-num">200</span>, <span class="tok-str">"application/json"</span>, <span class="tok-str">"""{"status":"ok"}"""</span>)
+      <span class="tok-op">|</span>
+         (<span class="tok-num">404</span>, <span class="tok-str">"text/plain"</span>, <span class="tok-str">"Not Found: ${path}"</span>)</code></pre>
             </div>
           </div>
         </div>
@@ -301,15 +305,16 @@ count <span class="tok-op">=</span> <span class="tok-num">10</span>
             </div>
             <div class="code-wrapper">
               <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
-              <pre><code><span class="tok-com">// Multi-argument feed ($>) and sections</span>
-<span class="tok-fn">clamp</span>: <span class="tok-typ">Int</span>, <span class="tok-typ">Int</span>, <span class="tok-typ">Int</span> <span class="tok-op">=&gt;</span> <span class="tok-typ">Int</span>
-<span class="tok-fn">clamp</span> <span class="tok-op">=</span> <span class="tok-fn">val</span>, <span class="tok-fn">lo</span>, <span class="tok-fn">hi</span> <span class="tok-op">=&gt;</span>
-   val <span class="tok-op">[</span><span class="tok-op">&lt;</span> lo<span class="tok-op">]</span> lo <span class="tok-op">[</span><span class="tok-op">&gt;</span> hi<span class="tok-op">]</span> hi <span class="tok-op">|</span> val
+              <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">io</span>
+
+<span class="tok-com">// Multi-argument feed ($&gt;) and operator sections</span>
+<span class="tok-fn">bound</span>: <span class="tok-typ">Int</span>, <span class="tok-typ">Int</span>, <span class="tok-typ">Int</span> <span class="tok-op">=&gt;</span> <span class="tok-typ">Int</span>
+<span class="tok-fn">bound</span> <span class="tok-op">=</span> <span class="tok-fn">val</span>, <span class="tok-fn">lo</span>, <span class="tok-fn">hi</span> <span class="tok-op">=&gt;</span> <span class="tok-fn">%clamp</span>(val, lo, hi)
 
 raw <span class="tok-op">=</span> <span class="tok-num">150</span>
-<span class="tok-com">// Feeds raw into clamp, then applies section</span>
-result <span class="tok-op">=</span> raw <span class="tok-op">$></span> <span class="tok-fn">clamp</span>(<span class="tok-num">0</span>, <span class="tok-num">100</span>) <span class="tok-op">$></span> (<span class="tok-num">2</span> <span class="tok-op">*</span> <span class="tok-op">_</span>)
-<span class="tok-fn">print_int</span> <span class="tok-op">$</span> result</code></pre>
+<span class="tok-com">// Feeds raw into bound, then applies section (2 * _)</span>
+result <span class="tok-op">=</span> raw <span class="tok-op">$&gt;</span> <span class="tok-fn">bound</span>(<span class="tok-num">0</span>, <span class="tok-num">100</span>) <span class="tok-op">$&gt;</span> (<span class="tok-num">2</span> <span class="tok-op">*</span> <span class="tok-op">_</span>)
+<span class="tok-fn">io::out</span> <span class="tok-op">$</span> result</code></pre>
             </div>
           </div>
         </div>
@@ -330,16 +335,18 @@ result <span class="tok-op">=</span> raw <span class="tok-op">$></span> <span cl
             </div>
             <div class="code-wrapper">
               <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
-              <pre><code><span class="tok-com">// Cycle-escape (>--) returns &lt; T | &gt;</span>
+              <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">io</span>
+
+<span class="tok-com">// Cycle-escape (&gt;--) returns &lt; Int | &gt;</span>
 <span class="tok-fn">find_target</span>: <span class="tok-typ">Int</span>, <span class="tok-typ">Int</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;</span> <span class="tok-typ">Int</span> <span class="tok-op">|</span> <span class="tok-op">&gt;</span>
 <span class="tok-fn">find_target</span> <span class="tok-op">=</span> <span class="tok-fn">count</span>, <span class="tok-fn">target</span> <span class="tok-op">=&gt;</span>
-   <span class="tok-num">0</span><span class="tok-op">..</span>count <span class="tok-op">@</span> <span class="tok-fn">i</span> <span class="tok-op">=&gt;</span>
+   count <span class="tok-op">@</span> <span class="tok-fn">i</span> <span class="tok-op">=&gt;</span>
       i <span class="tok-op">[</span>target<span class="tok-op">]</span> <span class="tok-op">--&gt;</span>         <span class="tok-com">// matches i == target; breaks</span>
    <span class="tok-op">&gt;--</span>
       target
 
 res <span class="tok-op">=</span> <span class="tok-fn">find_target</span>(<span class="tok-num">10</span>, <span class="tok-num">7</span>)
-res <span class="tok-op">|</span> <span class="tok-fn">print_int</span>(<span class="tok-op">_</span>) <span class="tok-op">|</span> <span class="tok-fn">print</span> <span class="tok-op">$</span> <span class="tok-str">"Not found"</span></code></pre>
+res <span class="tok-op">|</span> <span class="tok-fn">io::out</span>(<span class="tok-op">_</span>) <span class="tok-op">|</span> <span class="tok-fn">io::out</span> <span class="tok-op">$</span> <span class="tok-str">"Not found"</span></code></pre>
             </div>
           </div>
         </div>
@@ -359,15 +366,17 @@ res <span class="tok-op">|</span> <span class="tok-fn">print_int</span>(<span cl
             </div>
             <div class="code-wrapper">
               <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
-              <pre><code><span class="tok-com">// LLVM SIMD operations on homogeneous records</span>
+              <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">io</span>
+
+<span class="tok-com">// LLVM SIMD operations on homogeneous records</span>
 pos <span class="tok-op">=</span> (<span class="tok-num">10</span>, <span class="tok-num">20</span>, <span class="tok-num">30</span>, <span class="tok-num">40</span>)
 vel <span class="tok-op">=</span> (<span class="tok-num">1</span>, <span class="tok-num">2</span>, <span class="tok-num">3</span>, <span class="tok-num">4</span>)
 
 <span class="tok-com">// Element-wise addition and scalar broadcast multiply</span>
 next_pos <span class="tok-op">=</span> pos <span class="tok-op">+</span> vel <span class="tok-op">*</span> <span class="tok-num">2</span>
 
-<span class="tok-fn">print_int</span> <span class="tok-op">$</span> next_pos(<span class="tok-num">0</span>)    <span class="tok-com">// 12</span>
-<span class="tok-fn">print_int</span> <span class="tok-op">$</span> next_pos(<span class="tok-num">3</span>)    <span class="tok-com">// 48</span></code></pre>
+<span class="tok-fn">io::out</span> <span class="tok-op">$</span> next_pos.<span class="tok-num">0</span>         <span class="tok-com">// 12</span>
+<span class="tok-fn">io::out</span> <span class="tok-op">$</span> next_pos.<span class="tok-num">3</span>         <span class="tok-com">// 48</span></code></pre>
             </div>
           </div>
         </div>
@@ -387,7 +396,9 @@ next_pos <span class="tok-op">=</span> pos <span class="tok-op">+</span> vel <sp
             </div>
             <div class="code-wrapper">
               <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
-              <pre><code><span class="tok-dir">#type</span> <span class="tok-typ">Point</span> (x: <span class="tok-typ">Int</span>, y: <span class="tok-typ">Int</span>)
+              <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">io</span>
+
+<span class="tok-dir">#type</span> <span class="tok-typ">Point</span> (x: <span class="tok-typ">Int</span>, y: <span class="tok-typ">Int</span>)
 
 <span class="tok-com">// Unprimed bindings allow interior field mutation</span>
 pt <span class="tok-op">=</span> <span class="tok-typ">Point</span>(<span class="tok-num">10</span>, <span class="tok-num">20</span>)
@@ -395,10 +406,10 @@ pt.x <span class="tok-op">=</span> <span class="tok-num">42</span>
 
 <span class="tok-com">// Rebindable local variables declare with a prime (')</span>
 total<span class="tok-op">'</span> <span class="tok-op">=</span> <span class="tok-num">0</span>
-<span class="tok-num">0</span><span class="tok-op">..</span><span class="tok-num">5</span> <span class="tok-op">@</span> <span class="tok-fn">i</span> <span class="tok-op">=&gt;</span>
+<span class="tok-num">5</span> <span class="tok-op">@</span> <span class="tok-fn">i</span> <span class="tok-op">=&gt;</span>
    total<span class="tok-op">'</span> <span class="tok-op">=</span> total<span class="tok-op">'</span> <span class="tok-op">+</span> i
 
-<span class="tok-fn">print_int</span> <span class="tok-op">$</span> total<span class="tok-op">'</span> <span class="tok-op">+</span> pt.x   <span class="tok-com">// 52</span></code></pre>
+<span class="tok-fn">io::out</span> <span class="tok-op">$</span> total<span class="tok-op">'</span> <span class="tok-op">+</span> pt.x      <span class="tok-com">// 52</span></code></pre>
             </div>
           </div>
         </div>
@@ -443,12 +454,11 @@ total<span class="tok-op">'</span> <span class="tok-op">=</span> <span class="to
 <span class="tok-fn">read_file</span>: <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;</span> <span class="tok-typ">String</span> <span class="tok-op">|</span> <span class="tok-op">&gt;</span>
 <span class="tok-fn">read_file</span> <span class="tok-op">=</span> <span class="tok-fn">path</span> <span class="tok-op">=&gt;</span>
    fd <span class="tok-op">=</span> <span class="tok-fn">libc::open</span>(path, <span class="tok-num">0</span>)
-   fd <span class="tok-op">[</span><span class="tok-op">&lt;</span> <span class="tok-num">0</span><span class="tok-op">]</span> <span class="tok-op">&lt;--&gt;</span>
-   <span class="tok-op">|</span>
-      b <span class="tok-op">=</span> {<span class="tok-num">4096</span>}
-      n <span class="tok-op">=</span> <span class="tok-fn">mem::write_tail</span>(b, <span class="tok-num">4096</span>, (dst, avail <span class="tok-op">=&gt;</span> <span class="tok-fn">libc::read</span>(fd, dst, avail)))
-      <span class="tok-fn">libc::close</span>(fd)
-      n <span class="tok-op">&gt;</span> <span class="tok-num">0</span> <span class="tok-op">|</span> <span class="tok-op">&lt;+</span> <span class="tok-op">+</span>b <span class="tok-op">+&gt;</span> <span class="tok-op">|</span> <span class="tok-op">&lt;--&gt;</span></code></pre>
+   fd <span class="tok-op">&lt;</span> <span class="tok-num">0</span> <span class="tok-op">|--&gt;</span>
+   b <span class="tok-op">=</span> {<span class="tok-num">4096</span>}
+   n <span class="tok-op">=</span> <span class="tok-fn">mem::write_tail</span>(b, <span class="tok-num">4096</span>, (dst, avail <span class="tok-op">=&gt;</span> <span class="tok-fn">libc::read</span>(fd, dst, avail)))
+   <span class="tok-fn">libc::close</span>(fd)
+   n <span class="tok-op">&gt;</span> <span class="tok-num">0</span> <span class="tok-op">|</span> <span class="tok-op">&lt;+</span> <span class="tok-op">+</span>b <span class="tok-op">+&gt;</span></code></pre>
             </div>
           </div>
         </div>
@@ -491,23 +501,26 @@ sat_sub  <span class="tok-op">=</span> <span class="tok-fn">%usub_sat</span>(<sp
               <p>Type-safe algebraic data types with compact unboxed payloads.</p>
               <ul>
                 <li><code>#type Name &lt;Variants&gt;</code> defines closed algebraic types</li>
-                <li>Variant guards <code>[Tag(payload)]</code> bind fields directly</li>
+                <li>Variant guards <code>[Tag payload]</code> and <code>[Tag (a, b)]</code> bind fields directly</li>
                 <li>Deep structural equality with <code>==</code> compares tag and payload</li>
                 <li>Unboxed register storage for single-scalar variants</li>
               </ul>
             </div>
             <div class="code-wrapper">
               <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
-              <pre><code><span class="tok-dir">#type</span> <span class="tok-typ">Shape</span> <span class="tok-op">&lt;</span> <span class="tok-typ">Circle</span>(<span class="tok-typ">Float</span>), <span class="tok-typ">Rect</span>((<span class="tok-typ">Float</span>, <span class="tok-typ">Float</span>)) <span class="tok-op">&gt;</span>
+              <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">io</span>
 
-<span class="tok-com">// Variant pattern matching binds payloads directly</span>
+<span class="tok-dir">#type</span> <span class="tok-typ">Shape</span> <span class="tok-op">&lt;</span> <span class="tok-typ">Circle</span>(<span class="tok-typ">Float</span>), <span class="tok-typ">Rect</span>(<span class="tok-typ">Float</span>, <span class="tok-typ">Float</span>) <span class="tok-op">&gt;</span>
+
+<span class="tok-com">// Variant pattern matching binds &amp; destructures payloads</span>
 <span class="tok-fn">area</span>: <span class="tok-typ">Shape</span> <span class="tok-op">=&gt;</span> <span class="tok-typ">Float</span>
 <span class="tok-fn">area</span> <span class="tok-op">=</span> <span class="tok-fn">s</span> <span class="tok-op">=&gt;</span>
-   s <span class="tok-op">[</span><span class="tok-typ">Circle</span>(r)<span class="tok-op">]</span> <span class="tok-num">3.14</span> <span class="tok-op">*</span> r <span class="tok-op">*</span> r
-     <span class="tok-op">[</span><span class="tok-typ">Rect</span>(dim)<span class="tok-op">]</span> dim(<span class="tok-num">0</span>) <span class="tok-op">*</span> dim(<span class="tok-num">1</span>)
+   s
+      <span class="tok-op">[</span><span class="tok-typ">Circle</span> r<span class="tok-op">]</span>    <span class="tok-num">3.14</span> <span class="tok-op">*</span> r <span class="tok-op">*</span> r
+      <span class="tok-op">[</span><span class="tok-typ">Rect</span> (w, h)<span class="tok-op">]</span> w <span class="tok-op">*</span> h
 
 c <span class="tok-op">=</span> <span class="tok-typ">Shape</span>(<span class="tok-typ">Circle</span>, <span class="tok-num">10.0</span>)
-<span class="tok-fn">print_float</span> <span class="tok-op">$</span> <span class="tok-fn">area</span>(c)       <span class="tok-com">// 314.0</span></code></pre>
+<span class="tok-fn">io::out</span> <span class="tok-op">$</span> <span class="tok-fn">area</span>(c)             <span class="tok-com">// 314.0</span></code></pre>
             </div>
           </div>
         </div>
@@ -528,13 +541,13 @@ c <span class="tok-op">=</span> <span class="tok-typ">Shape</span>(<span class="
             <div class="code-wrapper">
               <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
               <pre><code><span class="tok-com">// Bitwise operators &amp; UB-safe bit shifts</span>
-mask<span class="tok-op">'</span> <span class="tok-op">=</span> <span class="tok-num">0x01</span> <span class="tok-op">.|.</span> <span class="tok-num">0x04</span>       <span class="tok-com">// bitwise OR: 5</span>
+mask <span class="tok-op">=</span> <span class="tok-num">0x01</span> <span class="tok-op">.|.</span> <span class="tok-num">0x04</span>          <span class="tok-com">// bitwise OR: 5</span>
 
-<span class="tok-com">// Test bitmask flags</span>
-has_flag <span class="tok-op">=</span> mask<span class="tok-op">'</span> <span class="tok-op">.&amp;.</span> <span class="tok-num">0x04</span> <span class="tok-op">!=</span> <span class="tok-num">0</span>
+<span class="tok-com">// Test bitmask flags (.&amp;. binds looser than !=)</span>
+has_flag <span class="tok-op">=</span> (mask <span class="tok-op">.&amp;.</span> <span class="tok-num">0x04</span>) <span class="tok-op">!=</span> <span class="tok-num">0</span>
 
 <span class="tok-com">// Logical shift left with masked operand width</span>
-offset <span class="tok-op">=</span> <span class="tok-num">1</span> <span class="tok-op">.&lt;.</span> <span class="tok-num">8</span>            <span class="tok-com">// 256</span></code></pre>
+offset <span class="tok-op">=</span> <span class="tok-num">1</span> <span class="tok-op">.&lt;.</span> <span class="tok-num">8</span>              <span class="tok-com">// 256</span></code></pre>
             </div>
           </div>
         </div>
@@ -567,7 +580,7 @@ offset <span class="tok-op">=</span> <span class="tok-num">1</span> <span class=
                 <li><code>T{}</code> or <code>T{N}</code> initializes dynamic arrays with optional capacity hints</li>
                 <li><code>arr += item</code> appends elements in-place with amortized resizing</li>
                 <li><code>?arr</code> queries element length; <code>++arr</code> performs an explicit deep copy</li>
-                <li><code>arr(i)!!</code> reads with unwrap; <code>arr(i) | _ | fallback</code> handles bounds safely</li>
+                <li><code>arr @&gt; (_ * 2)</code> maps cleanly; <code>arr(i) |_| 0</code> handles bounds safely</li>
               </ul>
             </div>
             <div class="code-wrapper">
@@ -580,13 +593,14 @@ scores <span class="tok-op">+=</span> <span class="tok-num">95</span>
 scores <span class="tok-op">+=</span> <span class="tok-num">88</span>
 scores <span class="tok-op">+=</span> <span class="tok-num">100</span>
 
-<span class="tok-com">// Query count (?) and perform deep clone (++)</span>
-total <span class="tok-op">=</span> <span class="tok-op">?</span>scores
-backup <span class="tok-op">=</span> <span class="tok-op">++</span>scores
+<span class="tok-com">// Query count (?), deep clone (++), and expression map (@&gt;)</span>
+total   <span class="tok-op">=</span> <span class="tok-op">?</span>scores
+backup  <span class="tok-op">=</span> <span class="tok-op">++</span>scores
+doubled <span class="tok-op">=</span> scores <span class="tok-op">@&gt;</span> (<span class="tok-op">_</span> <span class="tok-op">*</span> <span class="tok-num">2</span>)
 
-<span class="tok-com">// Bounds-checked unwrap (!!) and safe fallback choice</span>
-first <span class="tok-op">=</span> scores(<span class="tok-num">0</span>)<span class="tok-op">!!</span>               <span class="tok-com">// unwraps 95</span>
-safe  <span class="tok-op">=</span> scores(<span class="tok-num">5</span>) <span class="tok-op">|</span> <span class="tok-op">_</span> <span class="tok-op">|</span> <span class="tok-num">0</span>    <span class="tok-com">// handles out-of-bounds</span></code></pre>
+<span class="tok-com">// Safe bounds-checked lookup with |_| default</span>
+first <span class="tok-op">=</span> scores(<span class="tok-num">0</span>) <span class="tok-op">|_|</span> <span class="tok-num">0</span>          <span class="tok-com">// 95</span>
+safe  <span class="tok-op">=</span> scores(<span class="tok-num">5</span>) <span class="tok-op">|_|</span> <span class="tok-num">0</span>          <span class="tok-com">// 0 (out of bounds)</span></code></pre>
             </div>
           </div>
         </div>
@@ -598,22 +612,22 @@ safe  <span class="tok-op">=</span> scores(<span class="tok-num">5</span>) <span
               <h3>Foreign Function Interface</h3>
               <p>Zero-overhead native interoperability calling C functions directly with LLVM ABI linkage.</p>
               <ul>
-                <li><code>#foreign "c"</code> declares typed foreign signatures without header wrappers</li>
-                <li>First-class <code>Addr</code> represents raw pointers and opaque OS handles</li>
-                <li>Pass immutable string data and mutable builder buffers (<code>&amp;b</code>) directly</li>
+                <li><code>#foreign("c")</code> declares typed foreign signatures without header wrappers</li>
+                <li>Nullary functions are invoked with postfix <code>!</code> (<code>getpid!</code>)</li>
+                <li>First-class non-null <code>Addr</code> &amp; 0-niche <code>&lt; Addr | &gt;</code> map directly to C pointers</li>
                 <li>Zero runtime bridge overhead, marshaling layers, or garbage collection stalls</li>
               </ul>
             </div>
             <div class="code-wrapper">
               <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
               <pre><code><span class="tok-com">// Declare foreign C ABI functions directly</span>
-<span class="tok-dir">#foreign</span> <span class="tok-str">"c"</span>
+<span class="tok-dir">#foreign</span>(<span class="tok-str">"c"</span>)
    <span class="tok-fn">puts</span>: (s: <span class="tok-typ">String</span>) <span class="tok-op">=&gt;</span> <span class="tok-typ">Int</span>
    <span class="tok-fn">getpid</span>: () <span class="tok-op">=&gt;</span> <span class="tok-typ">Int</span>
    <span class="tok-fn">isatty</span>: (fd: <span class="tok-typ">Int</span>) <span class="tok-op">=&gt;</span> <span class="tok-typ">Int</span>
 
 <span class="tok-com">// Invoke native POSIX symbols seamlessly</span>
-pid <span class="tok-op">=</span> <span class="tok-fn">getpid</span>()
+pid <span class="tok-op">=</span> <span class="tok-fn">getpid</span><span class="tok-op">!</span>
 is_term <span class="tok-op">=</span> <span class="tok-fn">isatty</span>(<span class="tok-num">1</span>) <span class="tok-op">!=</span> <span class="tok-num">0</span>
 
 is_term <span class="tok-op">|</span> <span class="tok-fn">puts</span>(<span class="tok-str">"Interactive terminal detected"</span>)
@@ -645,7 +659,7 @@ is_term <span class="tok-op">|</span> <span class="tok-fn">puts</span>(<span cla
    <span class="tok-fn">sign_payload</span>: <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> <span class="tok-typ">String</span>
    <span class="tok-fn">sign_payload</span> <span class="tok-op">=</span> <span class="tok-fn">data</span> <span class="tok-op">=&gt;</span>
       salt <span class="tok-op">=</span> <span class="tok-str">"edva-secret-salt"</span>
-      data <span class="tok-op">+</span> salt <span class="tok-op">$&gt;</span> <span class="tok-fn">sha256::digest</span> <span class="tok-op">$&gt;</span> <span class="tok-fn">to_hex</span>
+      <span class="tok-str">"${data}${salt}"</span> <span class="tok-op">$&gt;</span> <span class="tok-fn">sha256::digest</span> <span class="tok-op">$&gt;</span> <span class="tok-fn">to_hex</span>
 
 <span class="tok-com">// Unexported functions remain private to this module</span>
 <span class="tok-fn">validate</span>: <span class="tok-typ">String</span> <span class="tok-op">=&gt;</span> <span class="tok-op">&lt;</span> <span class="tok-op">|</span> <span class="tok-typ">String</span> <span class="tok-op">&gt;</span>
@@ -671,8 +685,8 @@ is_term <span class="tok-op">|</span> <span class="tok-fn">puts</span>(<span cla
             <div class="code-wrapper">
               <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
               <pre><code><span class="tok-com">// Compile-time constant folding with #const</span>
-<span class="tok-dir">#type</span> <span class="tok-typ">Version</span> (major: <span class="tok-typ">Int</span>, minor: <span class="tok-typ">Int</span>, patch: <span class="tok-typ">Int</span>)
-<span class="tok-fn">build_ver</span> <span class="tok-op">=</span> <span class="tok-dir">#const</span> <span class="tok-typ">Version</span>(<span class="tok-num">1</span>, <span class="tok-num">6</span>, <span class="tok-num">2</span>)
+<span class="tok-fn">buf_size</span> <span class="tok-op">=</span> <span class="tok-dir">#const</span> (<span class="tok-num">4096</span> <span class="tok-op">*</span> <span class="tok-num">4</span>)
+<span class="tok-fn">port_mask</span> <span class="tok-op">=</span> <span class="tok-dir">#const</span> ((<span class="tok-num">1</span> <span class="tok-op">.&lt;.</span> <span class="tok-num">16</span>) <span class="tok-op">-</span> <span class="tok-num">1</span>)
 
 <span class="tok-com">// Triple-quoted here-doc with margin stripping &amp; interpolation</span>
 user <span class="tok-op">=</span> <span class="tok-str">"Alice"</span>
