@@ -179,21 +179,21 @@ header {
 
 /* Main Container */
 main {
-   max-width: 1120px;
-   margin: 0;
-   padding: 4.5rem 2.5rem 4rem 2.5rem;
+   max-width: 1060px;
+   margin: 0 auto;
+   padding: 4.5rem 1.5rem 4rem 1.5rem;
    display: flex;
    flex-direction: column;
-   align-items: flex-start;
+   align-items: center;
 }
 
 /* Hero Section */
 .hero {
    width: 100%;
    display: flex;
-   justify-content: space-between;
+   justify-content: center;
    align-items: flex-start;
-   gap: 3rem;
+   gap: 2.25rem;
    text-align: left;
    margin-bottom: 3.5rem;
 }
@@ -203,11 +203,12 @@ main {
    justify-content: flex-start;
    align-items: flex-start;
    flex-shrink: 0;
+   margin-top: 0.4rem;
    margin-bottom: 0;
 }
 
 .brand-logo {
-   width: 112px;
+   width: 108px;
    height: auto;
    color: var(--accent-mint);
    filter: drop-shadow(0 4px 12px rgba(11, 128, 93, 0.15));
@@ -218,8 +219,7 @@ main {
 }
 
 .hero-content {
-   margin-left: auto;
-   max-width: 700px;
+   max-width: 680px;
    text-align: left;
 }
 
@@ -229,10 +229,11 @@ main {
    }
    .hero {
       flex-direction: column;
+      align-items: flex-start;
       gap: 1.5rem;
    }
-   .hero-content {
-      margin-left: 0;
+   .brand-logo-wrap {
+      margin-top: 0;
    }
    .brand-logo {
       width: 76px;
@@ -341,7 +342,7 @@ main {
 }
 
 .showcase-header {
-   text-align: left;
+   text-align: center;
    margin-bottom: 1.5rem;
 }
 
@@ -576,11 +577,12 @@ pre {
 .bottom-nav {
    margin-top: 4.5rem;
    margin-bottom: 0.5rem;
+   justify-content: center;
 }
 
 footer {
    margin-top: 2.5rem;
-   text-align: left;
+   text-align: center;
    font-size: 0.85rem;
    color: var(--text-muted);
 }
