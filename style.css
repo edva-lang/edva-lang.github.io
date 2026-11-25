@@ -12,6 +12,7 @@
    --bg-color: #eff4f8; /* Cloud */
    --text-color: #161626; /* Indigo */
    --text-muted: #576574;
+   --text-sub: #475569;
    --grid-line-color: rgba(
       131,
       201,
@@ -51,6 +52,7 @@
    --bg-color: #161626; /* Indigo */
    --text-color: #eff4f8; /* Cloud */
    --text-muted: #8fa0b5;
+   --text-sub: #a8b9cc;
    --grid-line-color: rgba(
       131,
       201,
@@ -90,6 +92,7 @@
       --bg-color: #161626;
       --text-color: #eff4f8;
       --text-muted: #8fa0b5;
+      --text-sub: #a8b9cc;
       --grid-line-color: rgba(131, 201, 244, 0.045);
 
       --card-bg: rgba(32, 32, 54, 0.85);
@@ -143,33 +146,79 @@ body {
 }
 
 /* Header & Theme toggle */
-header {
-   position: absolute;
-   top: 0;
-   left: 0;
-   right: 0;
+.site-header {
+   width: 100%;
+   border-bottom: 1px solid var(--card-border);
+   background: var(--card-bg);
+   backdrop-filter: blur(8px);
+}
+
+.site-header-inner {
+   max-width: 1060px;
+   margin: 0 auto;
+   padding: 0.7rem 1.5rem;
    display: flex;
-   justify-content: flex-end;
-   padding: 1.5rem 2rem;
-   z-index: 10;
+   justify-content: space-between;
+   align-items: center;
+   gap: 1rem;
+}
+
+.header-meta {
+   display: flex;
+   align-items: center;
+   gap: 0.55rem;
+   font-family:
+      "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+      Consolas, monospace;
+   font-size: 0.78rem;
+   color: var(--text-sub);
+   letter-spacing: 0.02em;
+}
+
+.meta-ver {
+   color: var(--accent-mint);
+   font-weight: 500;
+}
+
+.meta-sep {
+   opacity: 0.4;
+}
+
+.header-actions {
+   display: flex;
+   align-items: center;
+   gap: 1.25rem;
+}
+
+.header-link {
+   font-family:
+      "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+      Consolas, monospace;
+   font-size: 0.8rem;
+   color: var(--text-sub);
+   text-decoration: none;
+   transition: color 0.15s ease;
+}
+
+.header-link:hover {
+   color: var(--accent-mint);
 }
 
 .theme-toggle {
-   background: var(--card-bg);
+   background: transparent;
    border: 1px solid var(--card-border);
    color: var(--text-color);
-   width: 40px;
-   height: 40px;
+   width: 34px;
+   height: 34px;
    border-radius: 0;
    cursor: pointer;
    display: flex;
    align-items: center;
    justify-content: center;
-   font-size: 1.1rem;
+   font-size: 1rem;
    transition:
       border-color 0.2s,
       transform 0.2s;
-   backdrop-filter: blur(8px);
 }
 
 .theme-toggle:hover {
@@ -181,21 +230,24 @@ header {
 main {
    max-width: 1060px;
    margin: 0 auto;
-   padding: 4.5rem 1.5rem 4rem 1.5rem;
+   padding: 2.5rem 1.5rem 4rem 1.5rem;
    display: flex;
    flex-direction: column;
-   align-items: center;
+   align-items: stretch;
 }
 
 /* Hero Section */
 .hero {
    width: 100%;
-   display: flex;
-   justify-content: center;
-   align-items: flex-start;
-   gap: 2.25rem;
    text-align: left;
-   margin-bottom: 3.5rem;
+   margin-bottom: 2.25rem;
+}
+
+.hero-lockup {
+   display: flex;
+   align-items: flex-end;
+   gap: 1.35rem;
+   margin-bottom: 1.35rem;
 }
 
 .brand-logo-wrap {
@@ -203,12 +255,10 @@ main {
    justify-content: flex-start;
    align-items: flex-start;
    flex-shrink: 0;
-   margin-top: 0.4rem;
-   margin-bottom: 0;
 }
 
 .brand-logo {
-   width: 108px;
+   width: 84px;
    height: auto;
    color: var(--accent-mint);
    filter: drop-shadow(0 4px 12px rgba(11, 128, 93, 0.15));
@@ -218,25 +268,31 @@ main {
       filter 0.3s ease;
 }
 
-.hero-content {
-   max-width: 680px;
-   text-align: left;
+.brand-lockup-text {
+   display: flex;
+   flex-direction: column;
+   justify-content: flex-end;
+   padding-bottom: 0.2rem;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 680px) {
+   .site-header-inner {
+      padding: 0.65rem 1.25rem;
+   }
+   .header-link {
+      display: none;
+   }
    main {
-      padding: 4.5rem 1.25rem 3rem 1.25rem;
+      padding: 2rem 1.25rem 3rem 1.25rem;
    }
-   .hero {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 1.5rem;
-   }
-   .brand-logo-wrap {
-      margin-top: 0;
+   .hero-lockup {
+      gap: 1rem;
    }
    .brand-logo {
-      width: 76px;
+      width: 66px;
+   }
+   .brand-title {
+      font-size: 74px;
    }
 }
 
@@ -251,46 +307,67 @@ main {
 .brand-title {
    font-family: "Gloock", serif;
    font-weight: 500;
-   font-size: 100px;
-   line-height: 1.05;
+   font-size: 96px;
+   line-height: 0.92;
    letter-spacing: -0.02em;
-   margin-bottom: 0.25rem;
+   margin-bottom: 0.35rem;
    color: var(--text-color);
    user-select: none;
 }
 
 .brand-sub {
    font-family:
-      "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
-   font-size: 0.72rem;
-   font-weight: 300;
-   letter-spacing: 0.05em;
-   color: var(--text-muted);
-   margin-top: 0;
-   margin-bottom: 1.5rem;
-   opacity: 0.75;
+      "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+      Consolas, monospace;
+   font-size: 0.82rem;
+   font-weight: 400;
+   letter-spacing: 0.04em;
+   color: var(--text-sub);
+   margin: 0;
 }
 
 .tagline {
-   font-size: 1.25rem;
-   color: var(--text-muted);
-   font-weight: 400;
-   max-width: 680px;
-   margin: 0 0 0.75rem 0;
-   line-height: 1.5;
+   font-size: 1.3rem;
+   color: var(--text-color);
+   font-weight: 500;
+   max-width: 720px;
+   margin: 0 0 1rem 0;
+   line-height: 1.45;
 }
 
 .targets-line {
-   font-size: 0.9rem;
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 0.5rem;
+   font-family:
+      "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+      Consolas, monospace;
+   font-size: 0.78rem;
+   color: var(--text-sub);
+   margin: 0 0 1.6rem 0;
+}
+
+.targets-label {
+   font-size: 0.72rem;
+   letter-spacing: 0.08em;
    color: var(--text-muted);
-   opacity: 0.85;
-   letter-spacing: 0.02em;
-   margin: 0 0 2rem 0;
+   margin-right: 0.15rem;
+}
+
+.target-tag {
+   display: inline-block;
+   padding: 0.2rem 0.55rem;
+   border: 1px solid var(--card-border);
+   background: var(--card-bg);
+   color: var(--text-color);
+   border-radius: 0;
 }
 
 .nav-links {
    display: flex;
-   gap: 1.25rem;
+   align-items: center;
+   gap: 1rem 1.25rem;
    flex-wrap: wrap;
    justify-content: flex-start;
 }
@@ -305,6 +382,29 @@ main {
    font-weight: 600;
    text-decoration: none;
    transition: all 0.2s ease;
+}
+
+.btn-link {
+   display: inline-flex;
+   align-items: center;
+   gap: 0.3rem;
+   padding: 0.4rem 0.25rem;
+   font-family:
+      "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+      Consolas, monospace;
+   font-size: 0.88rem;
+   font-weight: 400;
+   color: var(--text-sub);
+   text-decoration: none;
+   border-bottom: 1px solid transparent;
+   transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
+}
+
+.btn-link:hover {
+   color: var(--accent-mint);
+   border-bottom-color: var(--accent-mint);
 }
 
 .btn-primary {
@@ -342,8 +442,8 @@ main {
 }
 
 .showcase-header {
-   text-align: center;
-   margin-bottom: 1.5rem;
+   text-align: left;
+   margin-bottom: 1.25rem;
 }
 
 .showcase-title {
@@ -575,14 +675,16 @@ pre {
 }
 
 .bottom-nav {
-   margin-top: 4.5rem;
+   margin-top: 3.5rem;
    margin-bottom: 0.5rem;
-   justify-content: center;
+   justify-content: flex-start;
 }
 
 footer {
-   margin-top: 2.5rem;
-   text-align: center;
+   margin-top: 2rem;
+   padding-top: 1.5rem;
+   border-top: 1px solid var(--card-border);
+   text-align: left;
    font-size: 0.85rem;
    color: var(--text-muted);
 }
