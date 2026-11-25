@@ -143,6 +143,7 @@
           <button class="tab-btn" data-tab="tab-rams">Ramifications & Errors</button>
           <button class="tab-btn" data-tab="tab-builder">Builders & Memory</button>
           <button class="tab-btn" data-tab="tab-server">HTTP Server</button>
+          <button class="tab-btn" data-tab="tab-expr-cycles">Expression Cycles</button>
         </nav>
 
         <!-- Tab 1: Choices & Symbolic Flow -->
@@ -271,6 +272,37 @@
             </div>
           </div>
         </div>
+
+        <!-- Tab 5: Expression Cycles -->
+        <div class="tab-content" id="tab-expr-cycles">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>Expression Cycles (<code>@&gt;</code>)</h3>
+              <p>Transform, filter-map, fold, and freeze collections into strings with zero intermediate iterator objects.</p>
+              <ul>
+                <li><code>xs @&gt; (_ * 2)</code> maps into a fresh collection</li>
+                <li>Returning <code>&lt;+ val +&gt;</code> performs fused filter-map in one pass</li>
+                <li><code>(seed, xs) @&gt; (+)</code> folds left with any binary operator or closure</li>
+                <li><code>+(xs @&gt; ...)</code> streams chunks straight into a frozen <code>String</code></li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">io</span>
+
+nums <span class="tok-op">=</span> <span class="tok-typ">Int</span>{}(<span class="tok-num">1</span>, <span class="tok-num">2</span>, <span class="tok-num">3</span>, <span class="tok-num">4</span>, <span class="tok-num">5</span>, <span class="tok-num">6</span>)
+
+<span class="tok-com">// Map, filter-map, and seeded fold via @&gt;</span>
+doubled <span class="tok-op">=</span> nums <span class="tok-op">@&gt;</span> (<span class="tok-op">_</span> <span class="tok-op">*</span> <span class="tok-num">2</span>)
+evens   <span class="tok-op">=</span> nums <span class="tok-op">@&gt;</span> (<span class="tok-fn">n</span> <span class="tok-op">=&gt;</span> (n <span class="tok-op">.&amp;.</span> <span class="tok-num">1</span>) <span class="tok-op">==</span> <span class="tok-num">0</span> <span class="tok-op">|</span> <span class="tok-op">&lt;+</span> n <span class="tok-op">*</span> <span class="tok-num">10</span> <span class="tok-op">+&gt;</span>)
+sum     <span class="tok-op">=</span> (<span class="tok-num">0</span>, evens) <span class="tok-op">@&gt;</span> (<span class="tok-op">+</span>)
+
+<span class="tok-com">// Direct freeze into a String with unary +</span>
+csv <span class="tok-op">=</span> <span class="tok-op">+</span>(nums <span class="tok-op">@&gt;</span> (<span class="tok-fn">n</span>, <span class="tok-fn">i</span> <span class="tok-op">=&gt;</span> i <span class="tok-op">&gt;</span> <span class="tok-num">0</span> <span class="tok-op">|</span> <span class="tok-str">",${n}"</span> <span class="tok-op">|</span> <span class="tok-str">"${n}"</span>))
+<span class="tok-fn">io::out</span> <span class="tok-op">$</span> <span class="tok-str">"${csv} (sum=${sum})"</span></code></pre>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -288,6 +320,7 @@
           <button class="tab-btn" data-tab="tab-cycle-escape">Cycle Escape</button>
           <button class="tab-btn" data-tab="tab-simd">SIMD Vectors</button>
           <button class="tab-btn" data-tab="tab-mutability">Mutability</button>
+          <button class="tab-btn" data-tab="tab-records">Records &amp; Updates</button>
         </div>
 
         <!-- Tab 5: Pipelines & Sections -->
@@ -413,6 +446,36 @@ total<span class="tok-op">'</span> <span class="tok-op">=</span> <span class="to
             </div>
           </div>
         </div>
+
+        <!-- Tab 10: Records & Copy-Update -->
+        <div class="tab-content" id="tab-records">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>Records &amp; Copy-Update</h3>
+              <p>Nominal C-ABI structs with default field values, destructuring, and concise functional updates.</p>
+              <ul>
+                <li><code>#zero T</code> initializes a nominal record with its declared defaults</li>
+                <li><code>r $&gt; _(field = val)</code> performs copy-with-update in pipelines without repeating the type</li>
+                <li>Positional destructuring <code>(a, b, _) = rec</code> unpacks fields cleanly</li>
+                <li>Distinct <code>#type</code> records never accidentally unify</li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">io</span>
+
+<span class="tok-dir">#type</span> <span class="tok-typ">Config</span> (host: <span class="tok-typ">String</span> <span class="tok-op">=</span> <span class="tok-str">"127.0.0.1"</span>, port: <span class="tok-typ">Int</span> <span class="tok-op">=</span> <span class="tok-num">8080</span>, tls: <span class="tok-op">&lt;&gt;</span> <span class="tok-op">=</span> <span class="tok-op">&lt;-&gt;</span>)
+
+<span class="tok-com">// Defaults via #zero and pipeline copy-with-update</span>
+base <span class="tok-op">=</span> <span class="tok-dir">#zero</span> <span class="tok-typ">Config</span>
+prod <span class="tok-op">=</span> base <span class="tok-op">$&gt;</span> <span class="tok-op">_</span>(host <span class="tok-op">=</span> <span class="tok-str">"0.0.0.0"</span>, port <span class="tok-op">=</span> <span class="tok-num">443</span>, tls <span class="tok-op">=</span> <span class="tok-op">&lt;+&gt;</span>)
+
+<span class="tok-com">// Record destructuring</span>
+(host, port, <span class="tok-op">_</span>) <span class="tok-op">=</span> prod
+<span class="tok-fn">io::out</span> <span class="tok-op">$</span> <span class="tok-str">"${host}:${port}"</span></code></pre>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -430,6 +493,7 @@ total<span class="tok-op">'</span> <span class="tok-op">=</span> <span class="to
           <button class="tab-btn" data-tab="tab-intrinsics">LLVM Intrinsics</button>
           <button class="tab-btn" data-tab="tab-enums">Tagged Enums</button>
           <button class="tab-btn" data-tab="tab-bitwise">Bitwise Ops</button>
+          <button class="tab-btn" data-tab="tab-packed">Packed Types</button>
         </div>
 
         <!-- Tab 9: File I/O & Memory -->
@@ -551,6 +615,36 @@ offset <span class="tok-op">=</span> <span class="tok-num">1</span> <span class=
             </div>
           </div>
         </div>
+
+        <!-- Tab 15: Packed Types & Bitfields -->
+        <div class="tab-content" id="tab-packed">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>Packed Types &amp; Bitfields</h3>
+              <p>Exact binary wire layouts and sub-byte bitfields with compile-time size verification.</p>
+              <ul>
+                <li><code>#type(packed)</code> emits 1-byte aligned structs with zero padding</li>
+                <li><code>#type(packed = u16)</code> packs bit-width fields into an exact carrier integer</li>
+                <li><code>#size T</code> and <code>#align T</code> query exact ABI layout at compile time</li>
+                <li>Field reads/writes lower directly to shift-and-mask LLVM instructions</li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">io</span>
+
+<span class="tok-com">// 1-byte aligned wire header (zero struct padding)</span>
+<span class="tok-dir">#type(packed)</span> <span class="tok-typ">PacketHdr</span> (version: <span class="tok-typ">u8</span>, flags: <span class="tok-typ">u8</span>, length: <span class="tok-typ">u16</span>, seq: <span class="tok-typ">u32</span>)
+
+<span class="tok-com">// Packed 16-bit bitfield backed by u16</span>
+<span class="tok-dir">#type(packed = u16)</span> <span class="tok-typ">CtrlWord</span> (ver: <span class="tok-num">4</span>, kind: <span class="tok-num">4</span>, len: <span class="tok-num">8</span>)
+
+hdr <span class="tok-op">=</span> <span class="tok-typ">PacketHdr</span>(<span class="tok-num">1u8</span>, <span class="tok-num">0x04u8</span>, <span class="tok-num">128u16</span>, <span class="tok-num">42u32</span>)
+cw  <span class="tok-op">=</span> <span class="tok-typ">CtrlWord</span>(<span class="tok-num">2u8</span>, <span class="tok-num">5u8</span>, <span class="tok-num">64u8</span>)
+<span class="tok-fn">io::out</span> <span class="tok-op">$</span> <span class="tok-str">"hdr=${#size PacketHdr}B, cw=${#size CtrlWord}B, seq=${hdr.seq}, kind=${cw.kind}"</span></code></pre>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -568,6 +662,7 @@ offset <span class="tok-op">=</span> <span class="tok-num">1</span> <span class=
           <button class="tab-btn" data-tab="tab-ffi">Foreign C ABI</button>
           <button class="tab-btn" data-tab="tab-modules">Packages &amp; Modules</button>
           <button class="tab-btn" data-tab="tab-comptime">Comptime &amp; Here-Docs</button>
+          <button class="tab-btn" data-tab="tab-generics">Generics &amp; Reflection</button>
         </div>
 
         <!-- Tab 13: Growable Arrays -->
@@ -700,6 +795,39 @@ report <span class="tok-op">=</span> <span class="tok-str">"""
 <span class="tok-com">// Repetition literal (0 {8}) and 32-bit Unicode Rune</span>
 zero_block <span class="tok-op">=</span> <span class="tok-num">0</span> {<span class="tok-num">8</span>}
 badge <span class="tok-op">=</span> <span class="tok-str">'⚡</span></code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 20: Generics & Compile-Time Reflection -->
+        <div class="tab-content" id="tab-generics">
+          <div class="content-grid">
+            <div class="feature-info">
+              <h3>Generics &amp; Reflection (<code>#</code>)</h3>
+              <p>Zero-RTTI monomorphized generics paired with compile-time type introspection.</p>
+              <ul>
+                <li><code>#param T: Type</code> specializes functions per concrete call type</li>
+                <li><code>#members T @ f, i =&gt;</code> unrolls record fields or enum variants at compile time</li>
+                <li><code>#name T</code>, <code>#size T</code>, and <code>#has_member T, f</code> resolve statically</li>
+                <li>Zero runtime type descriptors or dynamic dispatch overhead</li>
+              </ul>
+            </div>
+            <div class="code-wrapper">
+              <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              <pre><code><span class="tok-dir">#use</span> <span class="tok-typ">io</span>
+
+<span class="tok-dir">#type</span> <span class="tok-typ">Point</span> (x: <span class="tok-typ">Int</span>, y: <span class="tok-typ">Int</span>)
+
+<span class="tok-com">// Monomorphized generic + compile-time reflection (#)</span>
+<span class="tok-fn">describe</span>: <span class="tok-dir">#param</span> <span class="tok-typ">T</span>: <span class="tok-typ">Type</span>, <span class="tok-typ">T</span> <span class="tok-op">=&gt;</span> <span class="tok-typ">String</span>
+<span class="tok-fn">describe</span> <span class="tok-op">=</span> <span class="tok-dir">#param</span> <span class="tok-typ">T</span>, <span class="tok-fn">val</span> <span class="tok-op">=&gt;</span>
+   fields <span class="tok-op">=</span> {<span class="tok-num">64</span>}
+   <span class="tok-dir">#members</span> <span class="tok-typ">T</span> <span class="tok-op">@</span> <span class="tok-fn">f</span>, <span class="tok-fn">i</span> <span class="tok-op">=&gt;</span>
+      i <span class="tok-op">&gt;</span> <span class="tok-num">0</span> <span class="tok-op">|</span> fields <span class="tok-op">+=</span> <span class="tok-str">", "</span>
+      fields <span class="tok-op">+=</span> f.name
+   <span class="tok-str">"${#name T} (${#size T}B): { ${+fields} }"</span>
+
+<span class="tok-fn">io::out</span> <span class="tok-op">$</span> <span class="tok-fn">describe</span>(<span class="tok-typ">Point</span>(<span class="tok-num">3</span>, <span class="tok-num">4</span>))</code></pre>
             </div>
           </div>
         </div>
