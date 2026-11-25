@@ -13,24 +13,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Gloock&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../style.css">
   <style>
-    .bench-wrap { max-width: 980px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+    .bench-wrap { max-width: 1120px; margin: 0; padding: 1.5rem 2.5rem 4rem; }
     .bench-topbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 2rem; }
     .bench-back { color: var(--accent-mint); text-decoration: none; font-size: 0.9rem; }
     .bench-back:hover { text-decoration: underline; }
-    .bench-hero { text-align: center; margin-bottom: 2.25rem; }
+    .bench-hero { text-align: left; margin-bottom: 2.25rem; }
     .bench-hero h1 { font-family: 'Gloock', serif; font-size: clamp(2rem, 5vw, 3rem); margin: 0 0 0.5rem; }
-    .bench-hero p { color: var(--text-muted); max-width: 680px; margin: 0 auto 1.25rem; line-height: 1.6; }
-    .metric-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-bottom: 2rem; }
+    .bench-hero p { color: var(--text-muted); max-width: 680px; margin: 0 0 1.25rem; line-height: 1.6; }
+    .metric-tabs { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 0.5rem; margin-bottom: 2rem; }
     .metric-btn {
       font-family: 'Roboto Mono', monospace; font-size: 0.82rem; padding: 0.5rem 0.9rem;
-      border-radius: 6px; border: 1px solid var(--card-border); background: var(--card-bg);
+      border-radius: 0; border: 1px solid var(--card-border); background: var(--card-bg);
       color: var(--text-color); cursor: pointer; transition: all 0.15s ease;
     }
     .metric-btn.active {
       background: var(--btn-primary-bg); color: var(--btn-primary-fg); border-color: var(--btn-primary-bg); font-weight: 500;
     }
     .workload-card {
-      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px;
+      background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 0;
       padding: 1.35rem 1.5rem; margin-bottom: 1.5rem; backdrop-filter: blur(4px);
     }
     .workload-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.5rem; margin-bottom: 0.35rem; }
@@ -41,8 +41,8 @@
     .bar-row { display: grid; grid-template-columns: 74px 1fr 120px; align-items: center; gap: 0.75rem; font-size: 0.84rem; }
     .bar-lang { font-weight: 500; text-transform: uppercase; letter-spacing: 0.03em; }
     .bar-lang.edva { color: var(--accent-mint); }
-    .bar-track { height: 22px; background: var(--tab-inactive-bg); border-radius: 4px; overflow: hidden; border: 1px solid var(--code-border); }
-    .bar-fill { height: 100%; border-radius: 3px; background: var(--accent-ice); opacity: 0.75; transition: width 0.25s ease; }
+    .bar-track { height: 22px; background: var(--tab-inactive-bg); border-radius: 0; overflow: hidden; border: 1px solid var(--code-border); }
+    .bar-fill { height: 100%; border-radius: 0; background: var(--accent-ice); opacity: 0.75; transition: width 0.25s ease; }
     .bar-fill.edva { background: var(--accent-mint); opacity: 1; }
     .bar-val { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
     .bench-table-wrap { overflow-x: auto; }
@@ -51,7 +51,7 @@
     table.bench-table th:first-child, table.bench-table td:first-child { text-align: left; }
     table.bench-table th { color: var(--text-muted); font-weight: 500; }
     table.bench-table tr.is-edva td:first-child { color: var(--accent-mint); font-weight: 500; }
-    .env-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 1.25rem 1.5rem; margin-top: 2rem; }
+    .env-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 0; padding: 1.25rem 1.5rem; margin-top: 2rem; }
     .env-card h3 { font-family: 'Gloock', serif; margin: 0 0 0.75rem; font-size: 1.2rem; }
     .env-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.5rem 1.25rem; font-size: 0.8rem; }
     .env-item span { color: var(--text-muted); }
@@ -70,7 +70,7 @@
     <section class="bench-hero">
       <h1>Benchmarks</h1>
       <p>Standardized native benchmarks comparing <strong>Edva</strong>, <strong>Clang (C)</strong>, <strong>Rust</strong>, <strong>Zig</strong>, and <strong>Go</strong>. Every run verifies identical stdout checksums across all five languages before recording latency, peak RSS, binary size, and cold compile time.</p>
-      <div class="nav-links" style="justify-content:center">
+      <div class="nav-links">
         <a href="https://github.com/edva-lang/benchmarks" class="btn btn-primary" target="_blank" rel="noopener">Reproduce on GitHub &rarr;</a>
         <a href="./results.json" class="btn btn-outline">Raw results.json</a>
       </div>
